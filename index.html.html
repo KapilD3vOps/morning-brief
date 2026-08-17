@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Morning Brief</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#13100E}
+body{color:#F0E8DC;font-family:-apple-system,"Segoe UI",sans-serif;font-size:14px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#1C1815}::-webkit-scrollbar-thumb{background:#3D342C;border-radius:2px}
+.dash{display:flex;height:100vh;overflow:hidden}
+.sb{width:220px;background:#0D1929;border-right:1px solid #1A2E44;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid #1A2E44}
+.sb-title{font-size:13px;font-weight:600;color:#F0E8DC;letter-spacing:0.02em}
+.sb-sub{font-size:11px;color:#4A6A8A;margin-top:2px}
+.sb-nav{padding:12px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .12s;color:#6B8CAE;font-size:13px;font-weight:500;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{background:rgba(232,120,26,0.08);color:#F0E8DC}
+.nav-item.active{background:rgba(232,120,26,0.12);color:#E8781A;border-left-color:#E8781A}
+.nav-item i{font-size:16px;flex-shrink:0}
+.sb-footer{padding:14px 16px;border-top:1px solid #1A2E44;font-size:11px;color:#2E4A60}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{padding:14px 24px;border-bottom:1px solid #2E2520;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#13100E;position:sticky;top:0;z-index:10}
+.topbar-date{font-size:13px;font-weight:600;color:#F0E8DC}
+.topbar-upd{font-size:11px;color:#5A4E42;margin-top:2px}
+.refresh-btn{display:flex;align-items:center;gap:6px;background:#E8781A;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s;font-family:inherit}
+.refresh-btn:hover{background:#C45E0D}
+.refresh-btn:disabled{background:#3D342C;color:#5A4E42;cursor:not-allowed}
+.content{padding:20px 24px;flex:1}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.grid7{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.m2col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:#1C1815;border-radius:10px;border:1px solid #2E2520;padding:15px 16px;margin-bottom:0}
+.ch{font-size:9.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#E8781A;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.ch::before{content:'';width:5px;height:5px;border-radius:50%;background:#E8781A;flex-shrink:0}
+.opening{font-size:14px;color:#8A7D6E;font-style:italic;line-height:1.6;margin-bottom:16px}
+.weather-main{font-size:16px;font-weight:600;margin-bottom:4px}
+.weather-sub{font-size:12px;color:#8A7D6E;line-height:1.5}
+.mkt-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #2E2520;font-size:13px}
+.mkt-row:last-child{border-bottom:none}
+.mkt-name{color:#8A7D6E;font-size:12px}
+.mkt-val{font-weight:600}
+.mkt-chg{font-size:11px;font-weight:600;margin-left:5px}
+.up{color:#4CAF7D}.dn{color:#C0451A}.fl{color:#5A4E42}
+.insight{font-size:11.5px;color:#8A7D6E;margin-top:10px;padding-top:10px;border-top:1px solid #2E2520;line-height:1.5}
+.nb{list-style:none}
+.nb li{font-size:12.5px;color:#C8BAA8;padding:5px 0 5px 12px;border-bottom:1px solid #2E2520;position:relative;line-height:1.5}
+.nb li:last-child{border-bottom:none}
+.nb li::before{content:'–';position:absolute;left:0;color:#5A4E42}
+.why{display:block;font-size:10.5px;color:#5A4E42;margin-top:2px}
+.why::before{content:'↳ ';color:#C49A3C}
+.sotd-hl{font-size:15px;font-weight:700;color:#F0E8DC;margin-bottom:7px;line-height:1.4}
+.sotd-body{font-size:13px;color:#A89880;line-height:1.65}
+.todo-item{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #2E2520}
+.todo-item:last-child{border-bottom:none}
+.cb{width:16px;height:16px;border:1.5px solid #3D342C;border-radius:3px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.cb.on{background:#E8781A;border-color:#E8781A}
+.tt{flex:1;font-size:13px;color:#C8BAA8}
+.tt.done{text-decoration:line-through;color:#4A3E34}
+.tdel{opacity:0;background:none;border:none;cursor:pointer;color:#3D342C;font-size:14px;line-height:1;padding:0 2px;transition:opacity .12s}
+.todo-item:hover .tdel{opacity:1}
+.tdel:hover{color:#C0451A}
+.t-add{display:flex;gap:8px;margin-top:10px}
+.t-input{flex:1;background:#231E1A;border:1px solid #3D342C;border-radius:6px;padding:7px 10px;font-size:13px;color:#F0E8DC;font-family:inherit;outline:none;transition:border-color .12s}
+.t-input:focus{border-color:#E8781A}
+.t-input::placeholder{color:#3D342C}
+.t-btn{background:#E8781A;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.t-btn:hover{background:#C45E0D}
+.clr-btn{margin-top:8px;background:none;border:1px solid #2E2520;border-radius:6px;padding:4px 10px;font-size:11px;color:#5A4E42;cursor:pointer;font-family:inherit}
+.clr-btn:hover{border-color:#3D342C;color:#8A7D6E}
+.t-empty{font-size:13px;color:#3D342C;font-style:italic;padding:8px 0}
+.rec-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #2E2520}
+.rec-item:last-child{border-bottom:none}
+.rec-tag{flex-shrink:0;font-size:8.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:3px 7px;border-radius:4px;color:#fff;margin-top:2px;white-space:nowrap}
+.rt-p{background:#2D6A4F}.rt-y{background:#8B0000}.rt-r{background:#1A2A4A}.rt-w{background:#5B3080}
+.rec-title{font-size:13px;font-weight:600;color:#F0E8DC;margin-bottom:3px;line-height:1.4}
+.rec-why{font-size:12px;color:#8A7D6E;line-height:1.5;margin-bottom:3px}
+.rec-meta{font-size:10.5px;color:#4A3E34}
+.qhit-list{list-style:none}
+.qhit-list li{font-size:12.5px;color:#A89880;padding:6px 0 6px 16px;border-bottom:1px solid #2E2520;position:relative;line-height:1.5}
+.qhit-list li:last-child{border-bottom:none}
+.qhit-list li::before{content:'→';position:absolute;left:0;color:#E8781A;font-weight:600}
+.recipe-big{background:#1A2818;border-radius:10px;border:1px solid #2D6A4F;padding:20px;margin-bottom:14px}
+.recipe-tag{display:inline-block;background:#2D6A4F;color:#A8E0B8;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:10px}
+.recipe-name{font-size:18px;font-weight:700;color:#F0E8DC;margin-bottom:6px}
+.recipe-desc{font-size:13px;color:#8A7D6E;margin-bottom:12px;line-height:1.5}
+.recipe-meta-row{display:flex;gap:12px;font-size:12px;color:#5A4E42;margin-bottom:14px}
+.recipe-link{display:inline-flex;align-items:center;gap:5px;background:#E8781A;color:#fff;text-decoration:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600}
+.recipe-link:hover{background:#C45E0D}
+.pfol-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #2E2520}
+.pfol-row:last-child{border-bottom:none}
+.pfol-type{font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.pf-fund{background:#1A2E44;color:#4A8ABE}
+.pf-etf{background:#1A2E1A;color:#4A9A4A}
+.pf-stock{background:#2E1A2E;color:#9A4A9A}
+.pfol-name{flex:1;font-size:12px;color:#C8BAA8;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pfol-short{font-size:11px;color:#3D342C;flex-shrink:0;min-width:50px;text-align:right}
+.sit-item{background:#231E1A;border-radius:7px;border:1px solid #2E2520;padding:11px 13px;margin-bottom:8px}
+.sit-item:last-child{margin-bottom:0}
+.sit-topic{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#C49A3C;margin-bottom:5px}
+.sit-text{font-size:12.5px;color:#A89880;line-height:1.55}
+.news-topic{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E8781A;margin-bottom:8px}
+.signoff{text-align:center;font-size:11px;color:#3D342C;font-style:italic;padding:16px 0 8px}
+.settings-section{margin-bottom:24px}
+.settings-label{font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8A7D6E;margin-bottom:8px}
+.settings-input{width:100%;background:#231E1A;border:1px solid #3D342C;border-radius:6px;padding:9px 12px;font-size:13px;color:#F0E8DC;font-family:inherit;outline:none;transition:border-color .12s}
+.settings-input:focus{border-color:#E8781A}
+.settings-input::placeholder{color:#3D342C}
+.settings-btn{background:#E8781A;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px}
+.settings-btn:hover{background:#C45E0D}
+.settings-note{font-size:11.5px;color:#5A4E42;margin-top:6px;line-height:1.6}
+.settings-success{font-size:12px;color:#4CAF7D;margin-top:6px}
+.settings-divider{border:none;border-top:1px solid #2E2520;margin:20px 0}
+.api-warning{background:#231E1A;border:1px solid #3D342C;border-radius:8px;padding:12px 14px;margin-bottom:16px}
+.api-warning-title{font-size:12px;font-weight:600;color:#C49A3C;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.api-warning-text{font-size:11.5px;color:#8A7D6E;line-height:1.6}
+.mktidx-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2E2520}
+.mktidx-row:last-child{border-bottom:none}
+@media(max-width:900px){.grid3,.grid7{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media(max-width:640px){.sb{display:none}.grid3,.grid2,.m2col,.grid7{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const{useState,useEffect,useCallback,useRef}=React;
+
+// Storage adapter — works standalone (localStorage) and in Claude (window.storage)
+const store={
+  async get(k){
+    if(window.storage)return window.storage.get(k);
+    const v=localStorage.getItem(k);return v?{value:v}:null;
+  },
+  async set(k,v){
+    if(window.storage)return window.storage.set(k,v);
+    localStorage.setItem(k,v);return{key:k,value:v};
+  }
+};
+
+const NAV=[
+  {id:'home',icon:'ti-layout-dashboard',label:'Home'},
+  {id:'markets',icon:'ti-chart-line',label:'Markets'},
+  {id:'news',icon:'ti-news',label:'News'},
+  {id:'todo',icon:'ti-checkbox',label:'To-Do'},
+  {id:'reading',icon:'ti-headphones',label:'Reading'},
+  {id:'recipes',icon:'ti-chef-hat',label:'Recipes'},
+  {id:'settings',icon:'ti-settings',label:'Settings'}
+];
+
+const PORTFOLIO=[
+  {name:'Vanguard LifeStrategy 100% Equity A Acc',type:'FUND',short:'VGLS'},
+  {name:'Polar Capital AI (Artfcl Intllgnc I Acc GBP)',type:'FUND',short:'PCAI'},
+  {name:'iShares Envir & Lw Carb Tilt REIdx (UK) DAcc',type:'ETF',short:'LCTU'},
+  {name:'Vanguard FTSE Emerg Markets ETF $Dis GBP',type:'ETF',short:'VFEM'},
+  {name:'Meta Platforms Inc.',type:'STOCK',short:'META'},
+  {name:'Alphabet Inc. Class A',type:'STOCK',short:'GOOGL'},
+  {name:'Vanguard FTSE Emerging Markets UCITS ETF',type:'ETF',short:'VFEA'},
+  {name:'iShares MSCI World Info Tech Sector Adv UCITS ETF',type:'ETF',short:'QDVE'},
+  {name:'iShares Global Aerospace & Defence UCITS ETF',type:'ETF',short:'DFND'},
+  {name:'iShares Edge MSCI World Min Volatility UCITS ETF',type:'ETF',short:'MVOL'},
+  {name:'iShares USD Short Duration Corp Bond UCITS ETF',type:'ETF',short:'SDIG'}
+];
+
+const RECIPES=[
+  {name:'Grilled sea bass with salsa verde',desc:'Fresh sea bass with a punchy herb sauce and new potatoes',time:'30 min',url:'https://www.bbcgoodfood.com/recipes/grilled-sea-bass-salsa-verde'},
+  {name:'Roasted tomato & burrata pasta',desc:'Peak-summer tomatoes slow-roasted with garlic and basil',time:'45 min',url:'https://www.bbcgoodfood.com/recipes/roasted-tomato-pasta'},
+  {name:'Lamb koftas with tzatziki',desc:'Spiced lamb skewers, flatbreads, tabbouleh and tzatziki',time:'35 min',url:'https://www.bbcgoodfood.com/recipes/lamb-koftas'},
+  {name:'Sweetcorn & courgette fritters',desc:'Light summery fritters with smashed avocado and soured cream',time:'25 min',url:'https://www.bbcgoodfood.com/recipes/courgette-fritters'},
+  {name:'Prawn linguine with chilli & lemon',desc:'Quick, elegant and full of summer flavour',time:'20 min',url:'https://www.bbcgoodfood.com/recipes/prawn-linguine'},
+  {name:'Slow-roasted pork shoulder',desc:'Six-hour pork with summer slaw and apple sauce',time:'6 hr',url:'https://www.bbcgoodfood.com/recipes/slow-roast-pork-shoulder'},
+  {name:'Roast chicken with tarragon & garlic',desc:'Whole bird roasted with herb butter and whole garlic',time:'1 hr 30',url:'https://www.bbcgoodfood.com/recipes/roast-chicken'},
+  {name:'Aubergine parmigiana',desc:'Italian summer layers with tomato and mozzarella',time:'1 hr',url:'https://www.bbcgoodfood.com/recipes/aubergine-parmigiana'},
+  {name:'Seared tuna with Asian slaw',desc:'Sesame-crusted tuna, edamame and ginger dressing',time:'20 min',url:'https://www.bbcgoodfood.com/recipes/seared-tuna'},
+  {name:'Roasted pepper & chickpea stew',desc:'Smoky harissa stew — great with crusty bread',time:'40 min',url:'https://www.bbcgoodfood.com/recipes/roasted-pepper-chickpea-stew'},
+  {name:'Grilled mackerel with gooseberry sauce',desc:'Seasonal mackerel with a sharp fruit sauce',time:'25 min',url:'https://www.bbcgoodfood.com/recipes/grilled-mackerel'},
+  {name:'Courgette & feta frittata',desc:'Summer garden frittata — works hot or room temperature',time:'30 min',url:'https://www.bbcgoodfood.com/recipes/courgette-feta-frittata'},
+  {name:'Thai green curry with summer veg',desc:'Light, fragrant curry with courgettes and green beans',time:'30 min',url:'https://www.bbcgoodfood.com/recipes/thai-green-curry'},
+  {name:'Beef & summer veg ragu',desc:'Slow-cooked ragu with garden vegetables and pappardelle',time:'2 hr',url:'https://www.bbcgoodfood.com/recipes/beef-ragu'}
+];
+
+const DEMO={
+  opening:"The Community Shield is today, the Pakistan Test series starts Tuesday, and the FTSE is doing that quiet Sunday drift. A good morning to get ahead of the week.",
+  weather:{conditions:"Mostly cloudy",high:27,low:17,note:"Slight shower possible mid-afternoon. Fine for the morning."},
+  markets:{
+    indices:[
+      {name:"FTSE 100",value:"10,750",change:"▼ 0.21%",up:false},
+      {name:"S&P 500",value:"7,785",change:"▼ 0.17%",up:false},
+      {name:"GBP/USD",value:"1.3536",change:"▲ 0.36%",up:true},
+      {name:"Gold",value:"$4,437",change:"▲ 0.38%",up:true},
+      {name:"Oil (Brent)",value:"$82.40",change:"▲ 1.42%",up:true},
+      {name:"GBP/EUR",value:"1.1694",change:"→ flat",up:null}
+    ],
+    insight:"FTSE miners dragged the index lower for a third session. Pound firming after Fitch held UK at AA\u2013 stable on Friday.",
+    situations:[
+      {topic:"Sports Streaming Rights",update:"Disney+ signed with Gary Neville\u2019s The Overlap for Stick to Football \u2014 directly countering Netflix\u2019s Rest Is Football deal. Fans now face a potential $2,000/yr streaming bill."},
+      {topic:"AI Regulation",update:"EU AI Act implementation progressing. OpenAI\u2019s Astra breakthrough raises new questions for regulators around AI that produces original scientific research."}
+    ]
+  },
+  story:{
+    headline:"Bob Iger just bought a basketball team.",
+    body:"The former Disney CEO and Joshua Kushner acquired the LA Lakers for $12.5 billion \u2014 the highest price ever paid for a US sports team, nearly double the previous record. Meanwhile, a group including Jeff Bezos bought a minority stake in Liverpool. Two of the biggest names in global business, both going long on sport at the same moment. The bet: live rights will keep outpacing every other media asset for at least a decade."
+  },
+  news:[
+    {topic:"AI & Tech",bullets:["OpenAI\u2019s Astra solved ten open mathematics problems and published verified proofs \u2014 AI doing original research, not just tasks.","Google dropped a sharper, cheaper model; Apple trained a China-specific version with Alibaba.","TSMC July revenue up 45% year-on-year as AI infrastructure spend holds firm."]},
+    {topic:"Business",bullets:["PayPal takeover talks resumed as Stripe weighs a higher offer.","AI is becoming a pound sterling story \u2014 strategists flagging UK\u2019s AI position as a GBP/USD driver.","SpaceX IPO excitement building despite recent share price softness."]},
+    {topic:"Football",bullets:["FA Community Shield today \u2014 Arsenal vs Manchester City at the Millennium Stadium in Cardiff.","Premier League 2026/27 kicks off Friday 21 August with Arsenal hosting newly promoted Coventry.","Newcastle sold Anthony Gordon to Barcelona; window closes 31 August."]},
+    {topic:"Cricket",bullets:["England vs Pakistan Test series begins 19 August \u2014 Lawrence, Pope, Carse and Cook named.","ECB and Sky Sports extended broadcast partnership to end of 2028.","The Hundred 2026 broadcast audience up 7.5%; digital channels hit best-ever figures."]},
+    {topic:"Sports Business",bullets:["Disney+ signed with The Overlap for Stick to Football, countering Netflix\u2019s Rest Is Football.","JPMorgan investing big in 2028 LA Olympics.","Sports fans face a potential $2,000 annual streaming bill \u2014 fragmentation accelerating."]},
+    {topic:"Sports Headlines",bullets:["New PL rules 2026/27: treatment means a full minute off the pitch; five-second countdown on delayed throw-ins.","England Women\u2019s ICC T20 World Cup 2026 delivered record domestic audiences.","Spain beat Argentina 1-0 in the World Cup final."]},
+    {topic:"London",bullets:["London parks providers renewed calls for safe use of green spaces during the summer heat.","City of London Corporation children\u2019s services praised by watchdog.","Michael Sheen announced as new host of Pointless, replacing Richard Osman."]}
+  ],
+  reading:[
+    {type:"PODCAST",title:"The Rest Is Football \u2014 new season opener",why:"Lineker, Shearer and Richards preview the Community Shield and 2026/27 title race.",meta:"Netflix / Spotify \u00b7 ~45 min"},
+    {type:"YOUTUBE",title:"Stick to Football \u2014 season preview (The Overlap)",why:"Neville, Carragher, Wright and Keane go club by club. Published Friday.",meta:"The Overlap YouTube \u00b7 1 hr 36 min"},
+    {type:"READ",title:"Sportico: the business behind the Lakers $12.5bn sale",why:"Best source on the Iger/Kushner economics \u2014 pairs well with the Bezos/Liverpool story.",meta:"sportico.com \u00b7 ~6 min"},
+    {type:"PODCAST",title:"Hard Fork (NYT) \u2014 the Astra maths breakthrough",why:"Roose and Newton on what the AI research breakthrough means. Less jargon than competing shows.",meta:"Spotify / Apple \u00b7 ~55 min"},
+    {type:"READ",title:"Exponential View (Azeem Azhar) \u2014 AI and the UK economy",why:"The framing you need as a BA presenting to non-technical stakeholders.",meta:"exponentialview.co \u00b7 ~10 min"}
+  ],
+  quickHits:[
+    "Ferrari\u2019s first all-EV sold at auction for \u20ac34.5m \u2014 a record for a road car in Europe.",
+    "TSMC July revenue ~$14.5bn, up 45% year-on-year. Every AI chip in every data centre goes through this one company in Taiwan.",
+    "Nigella Lawson is replacing Prue Leith on The Great British Bake Off. Prue has been on since 2017.",
+    "The Rest Is Football was Netflix\u2019s No.1 show in the UK every day of its 40-episode World Cup run.",
+    "Fitch kept the UK at AA\u2013 stable on Friday. Not exciting \u2014 but the alternative would have been considerably more so."
+  ]
+};
+
+function todayRecipe(){
+  const d=new Date();
+  const doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+  return RECIPES[doy%RECIPES.length];
+}
+
+function CardH({title}){
+  return React.createElement('div',{className:'ch'},React.createElement('span',null),title);
+}
+
+function MktChg({change,up}){
+  const cls=up===true?'up':up===false?'dn':'fl';
+  return React.createElement('span',{className:'mkt-chg '+cls},change);
+}
+
+function RecTag({type}){
+  const cls={PODCAST:'rt-p',YOUTUBE:'rt-y',READ:'rt-r',WATCH:'rt-w'}[type]||'rt-r';
+  return React.createElement('span',{className:'rec-tag '+cls},type);
+}
+
+function TypeBadge({type}){
+  const cls={FUND:'pf-fund',ETF:'pf-etf',STOCK:'pf-stock'}[type]||'pf-fund';
+  return React.createElement('span',{className:'pfol-type '+cls},type);
+}
+
+function HomeView({data,todos,onAddTodo,onToggleTodo}){
+  const[inp,setInp]=useState('');
+  const r=data||DEMO;
+  const rec=todayRecipe();
+  const active=todos.filter(t=>!t.done);
+  const top3=(r.news||[]).slice(0,3);
+
+  function handleAdd(e){
+    e.preventDefault();
+    if(inp.trim()){onAddTodo(inp.trim());setInp('');}
+  }
+
+  return React.createElement('div',null,
+    r.opening&&React.createElement('p',{className:'opening'},r.opening),
+    React.createElement('div',{className:'grid3'},
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'Weather \u00b7 London'}),
+        React.createElement('div',{className:'weather-main'},(r.weather?.conditions||'\u2013')+' \u00b7 '+(r.weather?.high||'\u2013')+'\u00b0C / '+(r.weather?.low||'\u2013')+'\u00b0C'),
+        React.createElement('div',{className:'weather-sub'},r.weather?.note||'')
+      ),
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'Markets'}),
+        (r.markets?.indices||[]).slice(0,3).map((m,i)=>
+          React.createElement('div',{key:i,className:'mkt-row'},
+            React.createElement('span',{className:'mkt-name'},m.name),
+            React.createElement('span',null,React.createElement('span',{className:'mkt-val'},m.value),React.createElement(MktChg,m))
+          )
+        ),
+        r.markets?.insight&&React.createElement('div',{className:'insight'},r.markets.insight)
+      ),
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'To-Do ('+active.length+')'}),
+        todos.length===0
+          ?React.createElement('p',{className:'t-empty'},'Nothing on the list yet.')
+          :React.createElement('div',null,
+            todos.slice(0,4).map(t=>
+              React.createElement('div',{key:t.id,className:'todo-item'},
+                React.createElement('div',{className:'cb'+(t.done?' on':''),onClick:()=>onToggleTodo(t.id)},
+                  t.done&&React.createElement('i',{className:'ti ti-check',style:{fontSize:10,color:'#fff'}})
+                ),
+                React.createElement('span',{className:'tt'+(t.done?' done':''),style:{fontSize:12}},t.text)
+              )
+            ),
+            todos.length>4&&React.createElement('div',{style:{fontSize:11,color:'#5A4E42',marginTop:6}},'+'+( todos.length-4)+' more')
+          ),
+        React.createElement('form',{onSubmit:handleAdd,className:'t-add',style:{marginTop:8}},
+          React.createElement('input',{className:'t-input',value:inp,onChange:e=>setInp(e.target.value),placeholder:'Quick add...',style:{fontSize:12}}),
+          React.createElement('button',{type:'submit',className:'t-btn',style:{padding:'7px 10px'}},'Add')
+        )
+      )
+    ),
+    React.createElement('div',{className:'grid2'},
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'Story of the day'}),
+        React.createElement('div',{className:'sotd-hl'},r.story?.headline||''),
+        React.createElement('div',{className:'sotd-body'},r.story?.body||'')
+      ),
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:"Tonight\u2019s recipe"}),
+        React.createElement('span',{className:'recipe-tag'},'Late summer'),
+        React.createElement('div',{style:{fontSize:14,fontWeight:600,color:'#F0E8DC',margin:'6px 0 4px',lineHeight:1.4}},rec.name),
+        React.createElement('div',{style:{fontSize:12,color:'#8A7D6E',marginBottom:8,lineHeight:1.5}},rec.desc),
+        React.createElement('div',{style:{fontSize:11,color:'#5A4E42',marginBottom:10}},'\u23f1 '+rec.time),
+        React.createElement('a',{href:rec.url,target:'_blank',rel:'noopener',className:'recipe-link',style:{fontSize:11,padding:'6px 12px'}},
+          React.createElement('i',{className:'ti ti-external-link',style:{fontSize:13}}),
+          'Full recipe'
+        )
+      )
+    ),
+    React.createElement('div',{className:'grid7',style:{marginBottom:14}},
+      top3.map((s,i)=>
+        React.createElement('div',{key:i,className:'card'},
+          React.createElement('div',{className:'news-topic'},s.topic),
+          React.createElement('ul',{className:'nb'},
+            (s.bullets||[]).map((b,j)=>React.createElement('li',{key:j},b))
+          )
+        )
+      )
+    ),
+    React.createElement('p',{className:'signoff'},'\u201cThe best time to plant a tree was 20 years ago. The second best time is now.\u201d \u2014 Chinese proverb')
+  );
+}
+
+function MarketsView({data}){
+  const r=data||DEMO;
+  const idx=r.markets?.indices||[];
+  const sits=r.markets?.situations||[];
+  return React.createElement('div',null,
+    React.createElement('div',{className:'m2col',style:{marginBottom:14}},
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'Indices'}),
+        idx.map((m,i)=>
+          React.createElement('div',{key:i,className:'mktidx-row'},
+            React.createElement('span',{className:'mkt-name'},m.name),
+            React.createElement('span',null,React.createElement('span',{className:'mkt-val'},m.value),React.createElement(MktChg,m))
+          )
+        ),
+        r.markets?.insight&&React.createElement('div',{className:'insight'},r.markets.insight)
+      ),
+      React.createElement('div',{className:'card'},
+        React.createElement(CardH,{title:'Your portfolio'}),
+        PORTFOLIO.map((p,i)=>
+          React.createElement('div',{key:i,className:'pfol-row'},
+            React.createElement(TypeBadge,{type:p.type}),
+            React.createElement('span',{className:'pfol-name'},p.name),
+            React.createElement('span',{className:'pfol-short'},p.short)
+          )
+        )
+      )
+    ),
+    sits.length>0&&React.createElement('div',{className:'card'},
+      React.createElement(CardH,{title:'Situations to monitor'}),
+      sits.map((s,i)=>
+        React.createElement('div',{key:i,className:'sit-item'},
+          React.createElement('div',{className:'sit-topic'},s.topic),
+          React.createElement('div',{className:'sit-text'},s.update)
+        )
+      )
+    )
+  );
+}
+
+function NewsView({data}){
+  const r=data||DEMO;
+  const news=r.news||[];
+  return React.createElement('div',null,
+    React.createElement('div',{className:'grid7',style:{marginBottom:14}},
+      news.map((s,i)=>
+        React.createElement('div',{key:i,className:'card'},
+          React.createElement('div',{className:'news-topic'},s.topic),
+          React.createElement('ul',{className:'nb'},
+            (s.bullets||[]).map((b,j)=>React.createElement('li',{key:j},b))
+          )
+        )
+      )
+    ),
+    (r.quickHits||[]).length>0&&React.createElement('div',{className:'card'},
+      React.createElement(CardH,{title:'Quick hits'}),
+      React.createElement('ul',{className:'qhit-list'},
+        r.quickHits.map((h,i)=>React.createElement('li',{key:i},h))
+      )
+    )
+  );
+}
+
+function TodoView({todos,onAddTodo,onToggleTodo,onDeleteTodo,onClearCompleted}){
+  const[inp,setInp]=useState('');
+  const hasDone=todos.some(t=>t.done);
+  function handleAdd(e){
+    e.preventDefault();
+    if(inp.trim()){onAddTodo(inp.trim());setInp('');}
+  }
+  return React.createElement('div',{style:{maxWidth:600}},
+    React.createElement('div',{className:'card'},
+      React.createElement(CardH,{title:'Tasks \u00b7 '+todos.filter(t=>!t.done).length+' remaining'}),
+      todos.length===0
+        ?React.createElement('p',{className:'t-empty'},'Nothing on the list yet.')
+        :todos.map(t=>
+          React.createElement('div',{key:t.id,className:'todo-item'},
+            React.createElement('div',{className:'cb'+(t.done?' on':''),onClick:()=>onToggleTodo(t.id)},
+              t.done&&React.createElement('i',{className:'ti ti-check',style:{fontSize:10,color:'#fff'}})
+            ),
+            React.createElement('span',{className:'tt'+(t.done?' done':'')},t.text),
+            React.createElement('button',{className:'tdel',onClick:()=>onDeleteTodo(t.id)},'\u00d7')
+          )
+        ),
+      React.createElement('form',{onSubmit:handleAdd,className:'t-add'},
+        React.createElement('input',{className:'t-input',value:inp,onChange:e=>setInp(e.target.value),placeholder:'Add a task...'}),
+        React.createElement('button',{type:'submit',className:'t-btn'},'Add')
+      ),
+      hasDone&&React.createElement('button',{className:'clr-btn',onClick:onClearCompleted},'Clear completed')
+    )
+  );
+}
+
+function ReadingView({data}){
+  const r=data||DEMO;
+  return React.createElement('div',{className:'card'},
+    React.createElement(CardH,{title:'What to read & watch'}),
+    (r.reading||[]).map((item,i)=>
+      React.createElement('div',{key:i,className:'rec-item'},
+        React.createElement(RecTag,{type:item.type}),
+        React.createElement('div',null,
+          React.createElement('div',{className:'rec-title'},item.title),
+          React.createElement('div',{className:'rec-why'},item.why),
+          React.createElement('div',{className:'rec-meta'},item.meta)
+        )
+      )
+    )
+  );
+}
+
+function RecipesView(){
+  const rec=todayRecipe();
+  const today=new Date();
+  const doy=Math.floor((today-new Date(today.getFullYear(),0,0))/864e5);
+  const upcoming=Array.from({length:6},(_,i)=>RECIPES[(doy+i+1)%RECIPES.length]);
+  return React.createElement('div',{style:{maxWidth:640}},
+    React.createElement('div',{className:'recipe-big'},
+      React.createElement('span',{className:'recipe-tag'},"Tonight\u2019s pick \u00b7 Late summer"),
+      React.createElement('h2',{className:'recipe-name'},rec.name),
+      React.createElement('p',{className:'recipe-desc'},rec.desc),
+      React.createElement('div',{className:'recipe-meta-row'},
+        React.createElement('span',null,React.createElement('i',{className:'ti ti-clock',style:{marginRight:4}}),rec.time),
+        React.createElement('span',null,'Seasonal \u00b7 Dinner')
+      ),
+      React.createElement('a',{href:rec.url,target:'_blank',rel:'noopener',className:'recipe-link'},
+        React.createElement('i',{className:'ti ti-external-link',style:{fontSize:13}}),
+        'Full recipe on BBC Good Food'
+      )
+    ),
+    React.createElement('div',{className:'card'},
+      React.createElement(CardH,{title:'Coming up this week'}),
+      upcoming.map((r,i)=>
+        React.createElement('div',{key:i,style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'7px 0',borderBottom:i<5?'1px solid #2E2520':'none'}},
+          React.createElement('div',null,
+            React.createElement('div',{style:{fontSize:13,color:'#C8BAA8'}},r.name),
+            React.createElement('div',{style:{fontSize:11,color:'#5A4E42',marginTop:1}},r.desc)
+          ),
+          React.createElement('span',{style:{fontSize:11,color:'#3D342C',flexShrink:0,marginLeft:12}},r.time)
+        )
+      )
+    )
+  );
+}
+
+function SettingsView({onSaveKey,savedKey}){
+  const[key,setKey]=useState('');
+  const[saved,setSaved]=useState(false);
+  function handleSave(e){
+    e.preventDefault();
+    if(key.trim()){
+      onSaveKey(key.trim());
+      setSaved(true);
+      setKey('');
+      setTimeout(()=>setSaved(false),3000);
+    }
+  }
+  return React.createElement('div',{style:{maxWidth:520}},
+    React.createElement('div',{className:'api-warning'},
+      React.createElement('div',{className:'api-warning-title'},
+        React.createElement('i',{className:'ti ti-lock',style:{fontSize:14}}),
+        'About your API key'
+      ),
+      React.createElement('div',{className:'api-warning-text'},
+        'Your key is saved to your browser\u2019s local storage only. It never goes in the code or the GitHub repo. Only use this dashboard on your own devices.'
+      )
+    ),
+    React.createElement('div',{className:'settings-section'},
+      React.createElement('div',{className:'settings-label'},'Anthropic API key'),
+      React.createElement('p',{className:'settings-note',style:{marginBottom:8}},
+        savedKey?'\u2713 Key saved. The refresh button will use it.':'Enter your key to enable live refresh. Get one at console.anthropic.com.'
+      ),
+      React.createElement('form',{onSubmit:handleSave},
+        React.createElement('input',{
+          className:'settings-input',
+          type:'password',
+          value:key,
+          onChange:e=>setKey(e.target.value),
+          placeholder:'sk-ant-...'
+        }),
+        React.createElement('button',{type:'submit',className:'settings-btn'},'Save key'),
+        saved&&React.createElement('div',{className:'settings-success'},'\u2713 Key saved successfully')
+      )
+    ),
+    React.createElement('hr',{className:'settings-divider'}),
+    React.createElement('div',{className:'settings-section'},
+      React.createElement('div',{className:'settings-label'},'Upcoming settings'),
+      React.createElement('ul',{style:{listStyle:'none',display:'flex',flexDirection:'column',gap:8}},
+        ['Your name and greeting','News topics \u2014 add or remove sections','Watchlist tickers','Situations to monitor','Recipe preferences'].map((item,i)=>
+          React.createElement('li',{key:i,style:{display:'flex',alignItems:'center',gap:8,fontSize:13,color:'#8A7D6E'}},
+            React.createElement('i',{className:'ti ti-circle-dot',style:{color:'#E8781A',fontSize:14}}),
+            item
+          )
+        )
+      )
+    )
+  );
+}
+
+function App(){
+  const[view,setView]=useState('home');
+  const[data,setData]=useState(DEMO);
+  const[lastUpdated,setLastUpdated]=useState(null);
+  const[refreshing,setRefreshing]=useState(false);
+  const[todos,setTodos]=useState([]);
+  const[apiKey,setApiKey]=useState('');
+
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const[d,lu,t,k]=await Promise.allSettled([
+          store.get('morning-data'),
+          store.get('morning-last-updated'),
+          store.get('morning-todos'),
+          store.get('morning-api-key')
+        ]);
+        if(d.status==='fulfilled'&&d.value)setData(JSON.parse(d.value.value));
+        if(lu.status==='fulfilled'&&lu.value)setLastUpdated(lu.value.value);
+        if(t.status==='fulfilled'&&t.value)setTodos(JSON.parse(t.value.value));
+        if(k.status==='fulfilled'&&k.value)setApiKey(k.value.value);
+      }catch(e){}
+    })();
+  },[]);
+
+  async function saveTodos(t){
+    setTodos(t);
+    try{await store.set('morning-todos',JSON.stringify(t));}catch(e){}
+  }
+
+  const addTodo=useCallback(async txt=>{
+    const nt=[...todos,{id:Date.now()+'',text:txt,done:false,created:new Date().toISOString()}];
+    await saveTodos(nt);
+  },[todos]);
+
+  const toggleTodo=useCallback(async id=>{
+    await saveTodos(todos.map(t=>t.id===id?{...t,done:!t.done}:t));
+  },[todos]);
+
+  const deleteTodo=useCallback(async id=>{
+    await saveTodos(todos.filter(t=>t.id!==id));
+  },[todos]);
+
+  const clearCompleted=useCallback(async()=>{
+    await saveTodos(todos.filter(t=>!t.done));
+  },[todos]);
+
+  async function saveKey(k){
+    setApiKey(k);
+    try{await store.set('morning-api-key',k);}catch(e){}
+  }
+
+  async function refresh(){
+    if(!apiKey){
+      alert('Add your Anthropic API key in Settings first.');
+      setView('settings');
+      return;
+    }
+    setRefreshing(true);
+    try{
+      const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-6',max_tokens:4000,
+          tools:[{'type':'web_search_20250305','name':'web_search'}],
+          system:'You are a personal briefing assistant. Today is '+today+'. Use web search for current UK/London data. Return ONLY valid JSON, no markdown. Structure: {"opening":"string","weather":{"conditions":"string","high":number,"low":number,"note":"string"},"markets":{"indices":[{"name":"string","value":"string","change":"string","up":boolean}],"insight":"string","situations":[{"topic":"string","update":"string"}]},"story":{"headline":"string","body":"string"},"news":[{"topic":"string","bullets":["string"]}],"reading":[{"type":"PODCAST|YOUTUBE|READ|WATCH","title":"string","why":"string","meta":"string"}],"quickHits":["string"]}. Include 6 market indices (FTSE 100, S&P 500, GBP/USD, Gold, Oil Brent, GBP/EUR). News topics: AI & Tech, Business, Football, Cricket, Sports Business, Sports Headlines, London. Situations: Sports Streaming Rights and AI Regulation. 5 reading items mixing formats. 5 quick hits.',
+          messages:[{role:'user',content:'Generate my morning brief with current data.'}]
+        })
+      });
+      const rd=await res.json();
+      if(rd.error){throw new Error(rd.error.message);}
+      const tb=rd.content.find(b=>b.type==='text');
+      if(tb){
+        const clean=tb.text.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'');
+        const nd=JSON.parse(clean);
+        const now=new Date().toISOString();
+        setData(nd);setLastUpdated(now);
+        await Promise.allSettled([
+          store.set('morning-data',JSON.stringify(nd)),
+          store.set('morning-last-updated',now)
+        ]);
+      }
+    }catch(e){
+      console.error('Refresh failed:',e);
+      alert('Refresh failed: '+e.message+'. Check your API key in Settings.');
+    }finally{setRefreshing(false);}
+  }
+
+  const fmtUpd=iso=>{
+    if(!iso)return'Never refreshed \u00b7 showing demo data';
+    const d=new Date(iso);
+    return'Updated '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+' \u00b7 '+d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  };
+
+  const todayStr=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const views={home:HomeView,markets:MarketsView,news:NewsView,todo:TodoView,reading:ReadingView,recipes:RecipesView};
+
+  const renderView=()=>{
+    if(view==='settings')return React.createElement(SettingsView,{onSaveKey:saveKey,savedKey:!!apiKey});
+    const CV=views[view]||HomeView;
+    return React.createElement(CV,{data,todos,onAddTodo:addTodo,onToggleTodo:toggleTodo,onDeleteTodo:deleteTodo,onClearCompleted:clearCompleted});
+  };
+
+  return React.createElement('div',{className:'dash'},
+    React.createElement('div',{className:'sb'},
+      React.createElement('div',{className:'sb-logo'},
+        React.createElement('div',{className:'sb-title'},'Morning Brief'),
+        React.createElement('div',{className:'sb-sub'},'Personal dashboard')
+      ),
+      React.createElement('nav',{className:'sb-nav'},
+        NAV.map(n=>
+          React.createElement('div',{
+            key:n.id,
+            className:'nav-item'+(view===n.id?' active':''),
+            onClick:()=>setView(n.id)
+          },
+            React.createElement('i',{className:'ti '+n.icon}),
+            n.label
+          )
+        )
+      ),
+      React.createElement('div',{className:'sb-footer'},'v2.0 \u00b7 github.com')
+    ),
+    React.createElement('div',{className:'main'},
+      React.createElement('div',{className:'topbar'},
+        React.createElement('div',null,
+          React.createElement('div',{className:'topbar-date'},todayStr),
+          React.createElement('div',{className:'topbar-upd'},fmtUpd(lastUpdated))
+        ),
+        React.createElement('button',{
+          className:'refresh-btn',
+          onClick:refresh,
+          disabled:refreshing
+        },
+          React.createElement('i',{className:'ti '+(refreshing?'ti-loader-2':'ti-refresh'),style:{fontSize:14}}),
+          refreshing?'Refreshing...':'Refresh'
+        )
+      ),
+      React.createElement('div',{className:'content'},renderView())
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
