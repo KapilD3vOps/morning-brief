@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Morning Brief</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0E0B08}
+body{color:#F0E8DC;font-family:-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.55}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#1C1815}::-webkit-scrollbar-thumb{background:#3A2E24;border-radius:2px}
+.dash{display:flex;height:100vh;overflow:hidden}
+.sb{width:220px;background:#13100E;border-right:1px solid #2A2018;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:22px 18px 16px;border-bottom:1px solid #2A2018}
+.sb-brand{font-size:14px;font-weight:700;color:#F0E8DC;letter-spacing:-0.01em}
+.sb-tagline{font-size:11px;color:#4A3E34;margin-top:3px}
+.sb-nav{padding:10px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 18px;cursor:pointer;color:#5A4E42;font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all .12s;user-select:none}
+.nav-item:hover{color:#C8BAA8;background:rgba(255,255,255,0.02)}
+.nav-item.active{color:#E8781A;background:rgba(232,120,26,0.08);border-left-color:#E8781A}
+.nav-item i{font-size:16px;flex-shrink:0}
+.sb-footer{padding:14px 18px;border-top:1px solid #2A2018;font-size:11px;color:#3A2E24}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;background:#0E0B08}
+.topbar{padding:14px 24px;border-bottom:1px solid #2A2018;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#13100E;position:sticky;top:0;z-index:10}
+.topbar-date{font-size:13px;font-weight:600;color:#F0E8DC}
+.topbar-upd{font-size:11px;color:#4A3E34;margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.wx-status{font-size:11px;color:#5A4E42;display:flex;align-items:center;gap:5px}
+.wx-dot{width:6px;height:6px;border-radius:50%;background:#4CAF7D;flex-shrink:0}
+.wx-dot.loading{background:#C49A3C;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.refresh-btn{display:flex;align-items:center;gap:6px;background:#E8781A;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s}
+.refresh-btn:hover{background:#C45E0D}
+.refresh-btn:disabled{background:#2A2018;color:#4A3E34;cursor:not-allowed}
+.content{padding:22px 24px;flex:1}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.g2w{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:#1C1815;border-radius:12px;border:1px solid #2A2018;padding:18px 20px}
+.ch{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E8781A;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.ch i{font-size:13px}
+.opening{font-size:17px;color:#6B5E50;font-style:italic;line-height:1.7;margin-bottom:22px}
+/* WEATHER */
+.wx-live-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#4CAF7D;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px}
+.wx-live-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#4CAF7D;display:inline-block}
+.wx-main{font-size:18px;font-weight:700;color:#F0E8DC;margin-bottom:4px}
+.wx-note{font-size:12px;color:#8A7D6E;line-height:1.5;margin-bottom:12px}
+.wx-periods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.wx-period{background:#231E1A;border-radius:7px;padding:9px 6px;text-align:center}
+.wx-period-lbl{font-size:9px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#5A4E42;margin-bottom:3px}
+.wx-period-temp{font-size:18px;font-weight:700;color:#F0E8DC}
+.wx-period-desc{font-size:10px;color:#8A7D6E;margin-top:2px;line-height:1.3}
+.wx-forecast{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid #2A2018;padding-top:11px}
+.wx-day{text-align:center}
+.wx-day-lbl{font-size:10px;font-weight:600;color:#5A4E42;margin-bottom:3px}
+.wx-day-hi{font-size:13px;font-weight:600;color:#C8BAA8}
+.wx-day-lo{font-size:11px;color:#5A4E42}
+.wx-day-desc{font-size:10px;color:#6B5E50;margin-top:2px}
+.wx-loading{font-size:13px;color:#5A4E42;font-style:italic;padding:20px 0;text-align:center}
+/* MARKETS */
+.mkt-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #2A2018;font-size:13px}
+.mkt-row:last-child{border-bottom:none}
+.mkt-name{color:#8A7D6E;font-size:12px}
+.mkt-val{font-weight:600}
+.mkt-chg{font-size:11px;font-weight:600;margin-left:5px}
+.up{color:#4CAF7D}.dn{color:#C0451A}.fl{color:#5A4E42}
+.mkt-insight{font-size:11.5px;color:#6B5E50;margin-top:10px;padding-top:10px;border-top:1px solid #2A2018;line-height:1.5}
+/* PORTFOLIO */
+.pfol-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #2A2018}
+.pfol-row:last-child{border-bottom:none}
+.pfol-badge{font-size:8.5px;font-weight:700;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.pf-fund{background:#1A2E44;color:#4A8ABE}
+.pf-etf{background:#1A2A1A;color:#4A9A4A}
+.pf-stock{background:#2A1A2E;color:#9A4A9A}
+.pfol-name{flex:1;font-size:12px;color:#C8BAA8;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pfol-chg-val{font-size:11.5px;font-weight:600;min-width:52px;text-align:right}
+/* ARSENAL */
+.afc-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.afc-badge{background:#DC2626;color:#fff;font-size:9px;font-weight:800;padding:3px 7px;border-radius:4px;letter-spacing:0.05em}
+.afc-title{font-size:12px;font-weight:600;color:#C8BAA8}
+.afc-section-lbl{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5A4E42;margin-bottom:7px}
+.result-row{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid #2A2018;font-size:12px}
+.result-row:last-child{border-bottom:none}
+.result-badge{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0}
+.r-w{background:#1A3A1A;color:#4CAF7D}.r-d{background:#2A2A1A;color:#C49A3C}.r-l{background:#3A1A1A;color:#C0451A}
+.result-opp{flex:1;color:#C8BAA8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result-score{font-weight:700;color:#F0E8DC;flex-shrink:0;min-width:58px;font-size:11px}
+.result-comp{font-size:9.5px;color:#5A4E42;flex-shrink:0}
+.afc-divider{border:none;border-top:1px solid #2A2018;margin:9px 0}
+.fixture-row{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid #2A2018;font-size:12px}
+.fixture-row:last-child{border-bottom:none}
+.fixture-ha{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+.fx-h{background:#1A2A1A;color:#4A8A4A}.fx-a{background:#2A1A1A;color:#8A4A4A}
+.fixture-opp{flex:1;color:#C8BAA8;font-weight:500}
+.fixture-meta{font-size:10px;color:#5A4E42;text-align:right;flex-shrink:0}
+/* COUNTDOWN */
+.cd-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2A2018}
+.cd-item:last-child{border-bottom:none}
+.cd-name{font-size:13px;color:#C8BAA8;font-weight:500}
+.cd-sub{font-size:10.5px;color:#5A4E42;margin-top:2px}
+.cd-days{font-size:22px;font-weight:700;color:#E8781A;min-width:44px;text-align:right}
+.cd-unit{font-size:9px;color:#5A4E42;text-align:right;margin-top:1px}
+.cd-empty{font-size:13px;color:#4A3E34;font-style:italic;padding:6px 0}
+.cd-link{font-size:11px;color:#E8781A;cursor:pointer;margin-top:9px;display:inline-block}
+/* STORY */
+.sotd-hl{font-size:16px;font-weight:700;color:#F0E8DC;margin-bottom:8px;line-height:1.45}
+.sotd-body{font-size:13px;color:#A89880;line-height:1.7}
+/* NEWS */
+.nb{list-style:none}
+.nb li{font-size:13px;color:#C8BAA8;padding:6px 0 6px 13px;border-bottom:1px solid #2A2018;position:relative;line-height:1.55}
+.nb li:last-child{border-bottom:none}
+.nb li::before{content:"–";position:absolute;left:0;color:#4A3E34}
+.news-topic-hd{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
+/* TODO */
+.todo-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #2A2018}
+.todo-item:last-child{border-bottom:none}
+.cb{width:17px;height:17px;border:1.5px solid #3A2E24;border-radius:4px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.cb.on{background:#E8781A;border-color:#E8781A}
+.tt{flex:1;font-size:13px;color:#C8BAA8}
+.tt.done{text-decoration:line-through;color:#4A3E34}
+.tdel{opacity:0;background:none;border:none;cursor:pointer;color:#3A2E24;font-size:14px;line-height:1;padding:0 2px}
+.todo-item:hover .tdel{opacity:1}
+.tdel:hover{color:#C0451A}
+.t-add{display:flex;gap:8px;margin-top:12px}
+.t-input{flex:1;background:#231E1A;border:1px solid #3A2E24;border-radius:6px;padding:8px 11px;font-size:13px;color:#F0E8DC;font-family:inherit;outline:none;transition:border-color .12s}
+.t-input:focus{border-color:#E8781A}
+.t-input::placeholder{color:#3A2E24}
+.t-btn{background:#E8781A;color:#fff;border:none;border-radius:6px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.t-btn:hover{background:#C45E0D}
+.clr-btn{margin-top:8px;background:none;border:1px solid #2A2018;border-radius:6px;padding:4px 10px;font-size:11px;color:#5A4E42;cursor:pointer;font-family:inherit}
+.t-empty{font-size:13px;color:#3A2E24;font-style:italic;padding:8px 0}
+/* READING */
+.genre-header{display:flex;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid #2A2018}
+.genre-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.genre-label{font-size:13px;font-weight:700;color:#F0E8DC}
+.rec-item{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid #2A2018}
+.rec-item:last-child{border-bottom:none}
+.rec-tag{flex-shrink:0;font-size:8.5px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:3px 7px;border-radius:4px;color:#fff;margin-top:2px;white-space:nowrap}
+.rt-p{background:#2D6A4F}.rt-y{background:#8B0000}.rt-r{background:#1A2A4A}.rt-w{background:#5B3080}
+.rec-title{font-size:13px;font-weight:600;color:#F0E8DC;margin-bottom:3px;line-height:1.4}
+.rec-why{font-size:12px;color:#8A7D6E;line-height:1.5;margin-bottom:3px}
+.rec-meta{font-size:10.5px;color:#4A3E34}
+/* RECIPE */
+.recipe-tag{display:inline-block;background:#1A2A1A;color:#4CAF7D;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-bottom:10px;border:1px solid #2D6A4F}
+.recipe-name{font-size:15px;font-weight:700;color:#F0E8DC;margin-bottom:5px;line-height:1.4}
+.recipe-desc{font-size:12px;color:#8A7D6E;margin-bottom:9px;line-height:1.5}
+.recipe-link{display:inline-flex;align-items:center;gap:5px;background:#2D6A4F;color:#E8F5E8;text-decoration:none;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #3A8A60}
+.recipe-link:hover{background:#245A40}
+/* SETTINGS */
+.settings-section{margin-bottom:24px;max-width:520px}
+.settings-lbl{font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8A7D6E;margin-bottom:8px}
+.settings-input{width:100%;background:#231E1A;border:1px solid #3A2E24;border-radius:7px;padding:9px 12px;font-size:13px;color:#F0E8DC;font-family:inherit;outline:none;transition:border-color .12s}
+.settings-input:focus{border-color:#E8781A}
+.settings-input::placeholder{color:#3A2E24}
+.settings-btn{background:#E8781A;color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px}
+.settings-btn:hover{background:#C45E0D}
+.settings-note{font-size:11.5px;color:#5A4E42;margin-top:5px;line-height:1.6}
+.settings-success{font-size:12px;color:#4CAF7D;margin-top:6px}
+.settings-divider{border:none;border-top:1px solid #2A2018;margin:20px 0}
+.api-note{background:#231E1A;border:1px solid #3A2E24;border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.api-note-title{font-size:12px;font-weight:600;color:#C49A3C;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.api-note-text{font-size:11.5px;color:#8A7D6E;line-height:1.6}
+.free-badge{display:inline-block;background:#1A2A1A;color:#4CAF7D;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.05em;border:1px solid #2D6A4F}
+.paid-badge{display:inline-block;background:#2A1E10;color:#E8781A;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.05em;border:1px solid #5A3A10}
+.cd-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #2A2018}
+.cd-event-row:last-child{border-bottom:none}
+.cd-event-name{flex:1;font-size:13px;color:#C8BAA8}
+.cd-event-date{font-size:11px;color:#8A7D6E}
+.cd-event-days{font-size:12px;color:#E8781A;font-weight:600;min-width:64px;text-align:right}
+.cd-event-del{background:none;border:none;cursor:pointer;color:#3A2E24;font-size:16px;line-height:1;padding:0 3px}
+.cd-event-del:hover{color:#C0451A}
+.sit-item{background:#231E1A;border-radius:8px;border:1px solid #2A2018;padding:12px 14px;margin-bottom:8px}
+.sit-item:last-child{margin-bottom:0}
+.sit-topic{font-size:9.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#C49A3C;margin-bottom:5px}
+.sit-text{font-size:12.5px;color:#A89880;line-height:1.6}
+.qh{list-style:none}
+.qh li{font-size:13px;color:#A89880;padding:6px 0 6px 16px;border-bottom:1px solid #2A2018;position:relative;line-height:1.5}
+.qh li:last-child{border-bottom:none}
+.qh li::before{content:">";position:absolute;left:0;color:#E8781A;font-weight:600}
+.signoff{text-align:center;font-size:11px;color:#3A2E24;font-style:italic;padding:16px 0 8px}
+/* STALE CONTENT NOTICE */
+.stale-notice{background:#2A1E10;border:1px solid #5A3A10;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#C49A3C;display:flex;align-items:center;gap:8px}
+.stale-notice i{font-size:14px;flex-shrink:0}
+/* JOBS */
+.jobs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.job-card{background:#1C1815;border-radius:12px;border:1px solid #2A2018;padding:16px 18px;display:flex;flex-direction:column;gap:0}
+.job-title{font-size:14px;font-weight:700;color:#F0E8DC;margin-bottom:5px;line-height:1.4}
+.job-company{font-size:12px;color:#E8781A;font-weight:600;margin-bottom:4px}
+.job-meta{display:flex;gap:10px;font-size:11px;color:#5A4E42;margin-bottom:6px;flex-wrap:wrap}
+.job-salary{font-size:12px;color:#4CAF7D;font-weight:600;margin-bottom:8px}
+.job-desc{font-size:12px;color:#8A7D6E;line-height:1.55;margin-bottom:12px;flex:1}
+.job-link{display:inline-flex;align-items:center;gap:5px;background:#2A1E10;color:#E8781A;text-decoration:none;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;border:1px solid #5A3A10;align-self:flex-start}
+.job-link:hover{background:#3A2A14}
+.jobs-empty{font-size:13px;color:#5A4E42;font-style:italic;padding:12px 0}
+.jobs-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:#5A4E42;padding:20px 0}
+.jobs-setup{background:#231E1A;border:1px solid #3A2E24;border-radius:10px;padding:20px 22px}
+.jobs-setup-title{font-size:14px;font-weight:600;color:#F0E8DC;margin-bottom:8px}
+.jobs-setup-text{font-size:12.5px;color:#8A7D6E;line-height:1.65;margin-bottom:14px}
+.jobs-setup-link{display:inline-flex;align-items:center;gap:5px;background:#E8781A;color:#fff;text-decoration:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.jobs-setup-link:hover{background:#C45E0D}
+@media(max-width:900px){.g3{grid-template-columns:1fr 1fr}.g2w{grid-template-columns:1fr}.jobs-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.sb{display:none}.g3,.g2,.g2w{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const{useState,useEffect,useCallback}=React;
+
+// Storage adapter — localStorage on GitHub Pages, window.storage in Claude artifacts
+const store={
+  async get(k){if(window.storage)return window.storage.get(k);const v=localStorage.getItem(k);return v?{value:v}:null;},
+  async set(k,v){if(window.storage)return window.storage.set(k,v);localStorage.setItem(k,v);return{key:k,value:v};}
+};
+
+const NAV=[
+  {id:"home",icon:"ti-layout-dashboard",label:"Home"},
+  {id:"markets",icon:"ti-chart-line",label:"Markets"},
+  {id:"news",icon:"ti-news",label:"News"},
+  {id:"todo",icon:"ti-checkbox",label:"To-Do"},
+  {id:"reading",icon:"ti-headphones",label:"Reading"},
+  {id:"jobs",icon:"ti-briefcase",label:"Jobs"},
+  {id:"recipes",icon:"ti-chef-hat",label:"Recipes"},
+  {id:"settings",icon:"ti-settings",label:"Settings"}
+];
+
+const PORTFOLIO=[
+  {name:"Vanguard LifeStrategy 100% Equity A Acc",type:"FUND",short:"VGLS"},
+  {name:"Polar Capital AI (Artfcl Intllgnc I Acc GBP)",type:"FUND",short:"PCAI"},
+  {name:"iShares Envir & Lw Carb Tilt REIdx (UK) DAcc",type:"ETF",short:"LCTU"},
+  {name:"Vanguard FTSE Emerg Markets ETF \$Dis GBP",type:"ETF",short:"VFEM"},
+  {name:"Meta Platforms Inc.",type:"STOCK",short:"META"},
+  {name:"Alphabet Inc. Class A",type:"STOCK",short:"GOOGL"},
+  {name:"Vanguard FTSE Emerging Markets UCITS ETF",type:"ETF",short:"VFEA"},
+  {name:"iShares MSCI World Info Tech Sector Adv UCITS ETF",type:"ETF",short:"QDVE"},
+  {name:"iShares Global Aerospace & Defence UCITS ETF",type:"ETF",short:"DFND"},
+  {name:"iShares Edge MSCI World Min Volatility UCITS ETF",type:"ETF",short:"MVOL"},
+  {name:"iShares USD Short Duration Corp Bond UCITS ETF",type:"ETF",short:"SDIG"}
+];
+
+const RECIPES=[
+  {name:"Grilled sea bass with salsa verde",desc:"Fresh sea bass with a punchy herb sauce and new potatoes",time:"30 min",url:"https://www.bbcgoodfood.com/recipes/grilled-sea-bass-salsa-verde"},
+  {name:"Roasted tomato & burrata pasta",desc:"Peak-summer tomatoes slow-roasted with garlic and basil",time:"45 min",url:"https://www.bbcgoodfood.com/recipes/roasted-tomato-pasta"},
+  {name:"Lamb koftas with tzatziki",desc:"Spiced lamb skewers, flatbreads, tabbouleh and tzatziki",time:"35 min",url:"https://www.bbcgoodfood.com/recipes/lamb-koftas"},
+  {name:"Sweetcorn & courgette fritters",desc:"Light summery fritters with smashed avocado and soured cream",time:"25 min",url:"https://www.bbcgoodfood.com/recipes/courgette-fritters"},
+  {name:"Prawn linguine with chilli & lemon",desc:"Quick, elegant and full of summer flavour",time:"20 min",url:"https://www.bbcgoodfood.com/recipes/prawn-linguine"},
+  {name:"Slow-roasted pork shoulder",desc:"Six-hour pork with summer slaw and apple sauce",time:"6 hr",url:"https://www.bbcgoodfood.com/recipes/slow-roast-pork-shoulder"},
+  {name:"Roast chicken with tarragon & garlic",desc:"Whole bird roasted with herb butter and whole garlic",time:"1 hr 30",url:"https://www.bbcgoodfood.com/recipes/roast-chicken"},
+  {name:"Aubergine parmigiana",desc:"Italian summer layers with tomato and mozzarella",time:"1 hr",url:"https://www.bbcgoodfood.com/recipes/aubergine-parmigiana"},
+  {name:"Seared tuna with Asian slaw",desc:"Sesame-crusted tuna, edamame and ginger dressing",time:"20 min",url:"https://www.bbcgoodfood.com/recipes/seared-tuna"},
+  {name:"Roasted pepper & chickpea stew",desc:"Smoky harissa stew, great with crusty bread",time:"40 min",url:"https://www.bbcgoodfood.com/recipes/roasted-pepper-chickpea-stew"},
+  {name:"Grilled mackerel with gooseberry sauce",desc:"Seasonal mackerel with a sharp fruit sauce",time:"25 min",url:"https://www.bbcgoodfood.com/recipes/grilled-mackerel"},
+  {name:"Courgette & feta frittata",desc:"Summer garden frittata, works hot or room temperature",time:"30 min",url:"https://www.bbcgoodfood.com/recipes/courgette-feta-frittata"},
+  {name:"Thai green curry with summer veg",desc:"Light curry with courgettes, green beans and mangetout",time:"30 min",url:"https://www.bbcgoodfood.com/recipes/thai-green-curry"},
+  {name:"Beef & summer veg ragu",desc:"Slow-cooked ragu with garden vegetables and pappardelle",time:"2 hr",url:"https://www.bbcgoodfood.com/recipes/beef-ragu"}
+];
+
+const GENRE_CFG={
+  sport:{label:"Sport",icon:"ti-trophy",color:"#2D6A4F",bg:"#1A2A1A"},
+  techAI:{label:"Tech & AI",icon:"ti-cpu",color:"#2A5A8A",bg:"#1A1E2A"},
+  business:{label:"Business",icon:"ti-chart-bar",color:"#8A6020",bg:"#2A1E10"},
+  culture:{label:"Culture",icon:"ti-book",color:"#5A3A8A",bg:"#1E1A2A"}
+};
+
+// Demo data shown while real content loads or as fallback
+const DEMO={
+  opening:"Open the page each morning for live weather. Hit Refresh once for the news layer \u2014 at about a penny a time.",
+  story:{headline:"Your morning brief is ready to go.",body:"Weather loads automatically every time you open this page \u2014 no key needed. Hit Refresh to pull today\u2019s news, markets, Arsenal results, and reading picks using your API key. First time? Add your key in Settings."},
+  news:[
+    {topic:"AI & Tech",color:"#2A5A8A",bullets:["Hit Refresh to load today\u2019s AI and tech news.","Your Anthropic API key goes in Settings.","Each refresh costs about a penny on Haiku 4.5."]},
+    {topic:"Business",color:"#8A6020",bullets:["UK business headlines load on refresh.","Markets data updates with each refresh.","FTSE, S&P, GBP/USD and your portfolio changes."]},
+    {topic:"Football",color:"#1A5A1A",bullets:["Premier League news loads on refresh.","Arsenal results and fixtures update automatically.","Transfer window and match previews included."]},
+    {topic:"Cricket",color:"#7A4A2A",bullets:["England cricket news loads on refresh.","ECB updates and match reports included.","The Hundred and international fixtures covered."]},
+    {topic:"Sports Business",color:"#3A2A6A",bullets:["Sports business headlines load on refresh.","Rights deals, ownership changes, broadcast news.","Sportico and Front Office Sports sourced."]},
+    {topic:"Sports Headlines",color:"#2A4A6A",bullets:["Top sports stories of the day load on refresh.","Across all major UK and international sport.","Results, previews, and breaking news."]},
+    {topic:"London",color:"#2A4A3A",bullets:["London news and headlines load on refresh.","Local stories, transport, culture.","What\u2019s happening in the city today."]}
+  ],
+  markets:{
+    indices:[
+      {name:"FTSE 100",value:"–",change:"refresh for live",up:null},
+      {name:"S&P 500",value:"–",change:"refresh for live",up:null},
+      {name:"GBP/USD",value:"–",change:"refresh for live",up:null},
+      {name:"Gold",value:"–",change:"refresh for live",up:null},
+      {name:"GBP/EUR",value:"–",change:"refresh for live",up:null}
+    ],
+    portfolioChanges:{},
+    insight:"Hit Refresh to load today\u2019s market data, portfolio movements, and weekly insight.",
+    situations:[
+      {topic:"Sports Streaming Rights",update:"Refresh to load the latest update on streaming rights developments."},
+      {topic:"AI Regulation",update:"Refresh to load the latest update on AI regulation and policy."}
+    ]
+  },
+  arsenal:{
+    lastResults:[
+      {opponent:"–",home:true,score:"Refresh for live data",result:"W",competition:"",date:""},
+      {opponent:"–",home:true,score:"Refresh for live data",result:"D",competition:"",date:""},
+      {opponent:"–",home:true,score:"Refresh for live data",result:"W",competition:"",date:""}
+    ],
+    nextFixtures:[
+      {opponent:"Refresh for",home:true,competition:"live",date:"fixtures"},
+      {opponent:"–",home:false,competition:"PL",date:"–"},
+      {opponent:"–",home:true,competition:"PL",date:"–"}
+    ]
+  },
+  reading:{sport:[],techAI:[],business:[],culture:[]},
+  quickHits:[]
+};
+
+function todayRecipe(){
+  const d=new Date();
+  return RECIPES[Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)%RECIPES.length];
+}
+function daysUntil(ds){
+  const t=new Date(ds),n=new Date();
+  t.setHours(0,0,0,0);n.setHours(0,0,0,0);
+  return Math.ceil((t-n)/864e5);
+}
+function fmtDate(ds){return new Date(ds).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
+function dayLabel(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).toLocaleDateString("en-GB",{weekday:"short"});}
+
+// ── Parse wttr.in JSON into our weather shape ──────────────────
+function parseWttr(d){
+  try{
+    const cur=d.current_condition[0];
+    const today=d.weather[0];
+    const h=today.hourly;
+    const rainPM=parseInt(h[5]&&h[5].chanceofrain||0);
+    const desc=cur.weatherDesc[0].value;
+    let note=desc+". No disruption expected.";
+    if(rainPM>60)note="Rain likely this afternoon ("+rainPM+"% chance). Worth taking an umbrella.";
+    else if(rainPM>30)note="Chance of rain mid-afternoon. Commute looks fine for now.";
+    const getPeriod=(idx)=>({
+      temp:parseInt(h[idx]?h[idx].tempC:cur.temp_C),
+      desc:h[idx]?h[idx].weatherDesc[0].value:desc
+    });
+    return{
+      conditions:desc,
+      high:parseInt(today.maxtempC),
+      low:parseInt(today.mintempC),
+      note,
+      live:true,
+      periods:{morning:getPeriod(3),afternoon:getPeriod(5),evening:getPeriod(6)},
+      forecast:d.weather.map(day=>({
+        day:dayLabel(day.date),
+        high:parseInt(day.maxtempC),
+        low:parseInt(day.mintempC),
+        desc:day.hourly[4]?day.hourly[4].weatherDesc[0].value:"–"
+      }))
+    };
+  }catch(e){return null;}
+}
+
+function fmtSalary(min,max){
+  if(!min&&!max)return null;
+  const fmt=n=>"£"+Math.round(n).toLocaleString("en-GB");
+  if(min&&max)return fmt(min)+" – "+fmt(max);
+  if(min)return fmt(min)+"+";
+  if(max)return "Up to "+fmt(max);
+  return null;
+}
+function fmtAgo(dateStr){
+  const d=new Date(dateStr);const now=new Date();
+  const days=Math.floor((now-d)/864e5);
+  if(days===0)return"Today";if(days===1)return"Yesterday";
+  if(days<7)return days+"d ago";if(days<30)return Math.floor(days/7)+"w ago";
+  return Math.floor(days/30)+"mo ago";
+}
+function stripHtml(html){return(html||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
+
+// ── Small presentational components ───────────────────────────
+function CH({title,icon}){return React.createElement("div",{className:"ch"},icon&&React.createElement("i",{className:"ti "+icon}),title);}
+function MktChg({change,up}){return React.createElement("span",{className:"mkt-chg "+(up===true?"up":up===false?"dn":"fl")},change);}
+function RecTag({type}){return React.createElement("span",{className:"rec-tag "+({PODCAST:"rt-p",YOUTUBE:"rt-y",READ:"rt-r",WATCH:"rt-w"}[type]||"rt-r")},type);}
+function PBadge({type}){return React.createElement("span",{className:"pfol-badge "+({FUND:"pf-fund",ETF:"pf-etf",STOCK:"pf-stock"}[type]||"pf-fund")},type);}
+function RBadge({result}){return React.createElement("span",{className:"result-badge "+({W:"r-w",D:"r-d",L:"r-l"}[result]||"r-d")},result);}
+
+// ── Weather card — live from wttr.in ──────────────────────────
+function WeatherCard({weather,loading}){
+  if(loading)return React.createElement("div",{className:"card"},
+    React.createElement(CH,{title:"Weather \u00b7 London",icon:"ti-cloud"}),
+    React.createElement("div",{className:"wx-loading"},
+      React.createElement("i",{className:"ti ti-loader-2",style:{fontSize:16,display:"block",marginBottom:6,animation:"pulse 1.2s infinite"}}),
+      "Checking London weather\u2026"
+    )
+  );
+  const w=weather||{conditions:"–",high:"–",low:"–",note:"Weather unavailable.",periods:{morning:{temp:"–",desc:"–"},afternoon:{temp:"–",desc:"–"},evening:{temp:"–",desc:"–"}},forecast:[]};
+  return React.createElement("div",{className:"card"},
+    React.createElement(CH,{title:"Weather \u00b7 London",icon:"ti-cloud"}),
+    w.live&&React.createElement("div",{className:"wx-live-badge"},"Live"),
+    React.createElement("div",{className:"wx-main"},(w.conditions||"–")+" \u00b7 "+w.high+"\u00b0/"+w.low+"\u00b0C"),
+    React.createElement("div",{className:"wx-note"},w.note||""),
+    w.periods&&React.createElement("div",{className:"wx-periods"},
+      [["morning","Morning"],["afternoon","Afternoon"],["evening","Evening"]].map(([k,l])=>
+        React.createElement("div",{key:k,className:"wx-period"},
+          React.createElement("div",{className:"wx-period-lbl"},l),
+          React.createElement("div",{className:"wx-period-temp"},(w.periods[k]?.temp||"–")+"\u00b0"),
+          React.createElement("div",{className:"wx-period-desc"},w.periods[k]?.desc||"")
+        )
+      )
+    ),
+    w.forecast&&w.forecast.length>0&&React.createElement("div",{className:"wx-forecast"},
+      w.forecast.slice(0,3).map((f,i)=>React.createElement("div",{key:i,className:"wx-day"},
+        React.createElement("div",{className:"wx-day-lbl"},f.day),
+        React.createElement("div",{className:"wx-day-hi"},f.high+"\u00b0"),
+        React.createElement("div",{className:"wx-day-lo"},f.low+"\u00b0"),
+        React.createElement("div",{className:"wx-day-desc"},f.desc)
+      ))
+    )
+  );
+}
+
+// ── Arsenal card ───────────────────────────────────────────────
+function ArsenalCard({data}){
+  const a=(data&&data.arsenal)||DEMO.arsenal;
+  return React.createElement("div",{className:"card"},
+    React.createElement("div",{className:"afc-header"},
+      React.createElement("span",{className:"afc-badge"},"AFC"),
+      React.createElement("span",{className:"afc-title"},"Arsenal")
+    ),
+    React.createElement("div",{className:"afc-section-lbl"},"Last 3 results"),
+    (a.lastResults||[]).map((r,i)=>React.createElement("div",{key:i,className:"result-row"},
+      React.createElement(RBadge,{result:r.result}),
+      React.createElement("span",{className:"result-score"},r.score),
+      React.createElement("span",{className:"result-opp"},(r.home?"vs ":"@ ")+r.opponent),
+      React.createElement("span",{className:"result-comp"},r.competition)
+    )),
+    React.createElement("hr",{className:"afc-divider"}),
+    React.createElement("div",{className:"afc-section-lbl"},"Next 3 fixtures"),
+    (a.nextFixtures||[]).map((f,i)=>React.createElement("div",{key:i,className:"fixture-row"},
+      React.createElement("span",{className:"fixture-ha "+(f.home?"fx-h":"fx-a")},f.home?"H":"A"),
+      React.createElement("span",{className:"fixture-opp"},f.opponent),
+      React.createElement("span",{className:"fixture-meta"},f.competition+" \u00b7 "+f.date)
+    ))
+  );
+}
+
+// ── Countdown card ─────────────────────────────────────────────
+function CountdownCard({countdowns,onGoSettings}){
+  const sorted=[...countdowns].map(c=>({...c,days:daysUntil(c.date)})).filter(c=>c.days>=0).sort((a,b)=>a.days-b.days);
+  return React.createElement("div",{className:"card"},
+    React.createElement(CH,{title:"Countdown",icon:"ti-calendar-event"}),
+    sorted.length===0
+      ?React.createElement("div",null,
+        React.createElement("p",{className:"cd-empty"},"No events added yet."),
+        React.createElement("span",{className:"cd-link",onClick:onGoSettings},"Add events in Settings \u2192")
+      )
+      :React.createElement("div",null,
+        sorted.slice(0,4).map(c=>React.createElement("div",{key:c.id,className:"cd-item"},
+          React.createElement("div",null,
+            React.createElement("div",{className:"cd-name"},c.name),
+            React.createElement("div",{className:"cd-sub"},fmtDate(c.date))
+          ),
+          React.createElement("div",{style:{textAlign:"right"}},
+            React.createElement("div",{className:"cd-days"},c.days),
+            React.createElement("div",{className:"cd-unit"},"days")
+          )
+        )),
+        React.createElement("span",{className:"cd-link",style:{marginTop:8},onClick:onGoSettings},"Manage \u2192")
+      )
+  );
+}
+
+// ── Stale content notice ───────────────────────────────────────
+function StaleNotice({lastUpdated,onRefresh}){
+  if(!lastUpdated)return React.createElement("div",{className:"stale-notice"},
+    React.createElement("i",{className:"ti ti-info-circle"}),
+    "News, markets and reading picks shown below are demo data. Hit Refresh (top right) to load today\u2019s content \u2014 costs about a penny."
+  );
+  const hrs=Math.floor((Date.now()-new Date(lastUpdated))/36e5);
+  if(hrs<8)return null;
+  return React.createElement("div",{className:"stale-notice"},
+    React.createElement("i",{className:"ti ti-clock"}),
+    "Content last refreshed "+hrs+" hours ago. Hit Refresh to update."
+  );
+}
+
+// ── Home view ──────────────────────────────────────────────────
+function HomeView({data,weather,wxLoading,todos,onAddTodo,onToggleTodo,countdowns,onGoSettings,lastUpdated,onRefresh}){
+  const[inp,setInp]=useState("");
+  const r=data||DEMO;
+  const rec=todayRecipe();
+  const active=todos.filter(t=>!t.done);
+  const top3=(r.news||[]).slice(0,3);
+  function submit(e){e.preventDefault();if(inp.trim()){onAddTodo(inp.trim());setInp("");}}
+  return React.createElement("div",null,
+    r.opening&&React.createElement("p",{className:"opening"},r.opening),
+    React.createElement(StaleNotice,{lastUpdated,onRefresh}),
+    React.createElement("div",{className:"g3"},
+      React.createElement(WeatherCard,{weather,loading:wxLoading}),
+      React.createElement(ArsenalCard,{data:r}),
+      React.createElement(CountdownCard,{countdowns,onGoSettings})
+    ),
+    React.createElement("div",{className:"g2w"},
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"Story of the day",icon:"ti-star"}),
+        React.createElement("div",{className:"sotd-hl"},r.story?.headline||""),
+        React.createElement("div",{className:"sotd-body"},r.story?.body||"")
+      ),
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"Markets",icon:"ti-chart-line"}),
+        (r.markets?.indices||[]).slice(0,4).map((m,i)=>React.createElement("div",{key:i,className:"mkt-row"},
+          React.createElement("span",{className:"mkt-name"},m.name),
+          React.createElement("span",null,React.createElement("span",{className:"mkt-val"},m.value),React.createElement(MktChg,m))
+        )),
+        r.markets?.insight&&React.createElement("div",{className:"mkt-insight"},r.markets.insight)
+      )
+    ),
+    React.createElement("div",{className:"g2"},
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"To-Do \u00b7 "+active.length+" remaining",icon:"ti-checkbox"}),
+        todos.length===0?React.createElement("p",{className:"t-empty"},"Nothing yet."):
+        todos.slice(0,5).map(t=>React.createElement("div",{key:t.id,className:"todo-item"},
+          React.createElement("div",{className:"cb"+(t.done?" on":""),onClick:()=>onToggleTodo(t.id)},
+            t.done&&React.createElement("i",{className:"ti ti-check",style:{fontSize:10,color:"#fff"}})
+          ),
+          React.createElement("span",{className:"tt"+(t.done?" done":""),style:{fontSize:12}},t.text)
+        )),
+        React.createElement("form",{onSubmit:submit,className:"t-add",style:{marginTop:10}},
+          React.createElement("input",{className:"t-input",value:inp,onChange:e=>setInp(e.target.value),placeholder:"Quick add...",style:{fontSize:12}}),
+          React.createElement("button",{type:"submit",className:"t-btn",style:{padding:"8px 10px"}},"Add")
+        )
+      ),
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"Tonight\u2019s recipe",icon:"ti-chef-hat"}),
+        React.createElement("div",{className:"recipe-tag"},"Late summer"),
+        React.createElement("div",{className:"recipe-name"},rec.name),
+        React.createElement("div",{className:"recipe-desc"},rec.desc),
+        React.createElement("div",{style:{fontSize:11,color:"#5A4E42",marginBottom:12}},"\u23f1 "+rec.time),
+        React.createElement("a",{href:rec.url,target:"_blank",rel:"noopener",className:"recipe-link"},
+          React.createElement("i",{className:"ti ti-external-link",style:{fontSize:13}}),"Full recipe"
+        )
+      )
+    ),
+    top3.length>0&&React.createElement("div",{className:"g3"},
+      top3.map((s,i)=>React.createElement("div",{key:i,className:"card"},
+        React.createElement("div",{className:"news-topic-hd",style:{color:s.color||"#E8781A"}},s.topic),
+        React.createElement("ul",{className:"nb"},(s.bullets||[]).map((b,j)=>React.createElement("li",{key:j},b)))
+      ))
+    ),
+    React.createElement("p",{className:"signoff"},"\u201cThe best time to plant a tree was 20 years ago. The second best time is now.\u201d \u2014 Chinese proverb")
+  );
+}
+
+
+// ── Jobs view — Adzuna auto-fetch —————————————————————
+function JobsView({jobs,loading,hasKeys,onGoSettings}){
+  if(!hasKeys)return React.createElement("div",{className:"jobs-setup"},
+    React.createElement("div",{className:"jobs-setup-title"},"Set up job listings"),
+    React.createElement("div",{className:"jobs-setup-text"},
+      "Job listings auto-load from Adzuna — the UK’s largest job aggregator — every time you open this page. It’s free and takes about 2 minutes to set up.\n\nYou’ll need a free Adzuna App ID and App Key from developer.adzuna.com. Once added in Settings, relevant roles load automatically each morning."
+    ),
+    React.createElement("button",{className:"jobs-setup-link",onClick:onGoSettings},
+      React.createElement("i",{className:"ti ti-settings",style:{fontSize:14}}),"Add keys in Settings"
+    )
+  );
+  if(loading)return React.createElement("div",{className:"jobs-loading"},
+    React.createElement("i",{className:"ti ti-loader-2",style:{fontSize:16}}),
+    "Loading job listings…"
+  );
+  if(!jobs||!jobs.length)return React.createElement("p",{className:"jobs-empty"},"No listings found. Try adjusting your search terms in Settings.");
+  return React.createElement("div",null,
+    React.createElement("div",{style:{fontSize:12,color:"#5A4E42",marginBottom:14}},
+      "Showing "+jobs.length+" roles · Senior Business Analyst · London · Sorted by date · via Adzuna"
+    ),
+    React.createElement("div",{className:"jobs-grid"},
+      jobs.map((j,i)=>{
+        const salary=fmtSalary(j.salary_min,j.salary_max);
+        const desc=stripHtml(j.description).slice(0,160)+"...";
+        const ago=fmtAgo(j.created);
+        return React.createElement("div",{key:i,className:"job-card"},
+          React.createElement("div",{className:"job-title"},j.title),
+          React.createElement("div",{className:"job-company"},j.company&&j.company.display_name||"–"),
+          React.createElement("div",{className:"job-meta"},
+            React.createElement("span",null,React.createElement("i",{className:"ti ti-map-pin",style:{fontSize:11,marginRight:3}}),j.location&&j.location.display_name||"London"),
+            React.createElement("span",null,React.createElement("i",{className:"ti ti-clock",style:{fontSize:11,marginRight:3}}),ago),
+            j.contract_type&&React.createElement("span",null,j.contract_type)
+          ),
+          salary&&React.createElement("div",{className:"job-salary"},salary),
+          React.createElement("div",{className:"job-desc"},desc),
+          React.createElement("a",{href:j.redirect_url,target:"_blank",rel:"noopener",className:"job-link"},
+            React.createElement("i",{className:"ti ti-external-link",style:{fontSize:12}}),"View role"
+          )
+        );
+      })
+    )
+  );
+}
+
+// ── Markets view ───────────────────────────────────────────────
+function MarketsView({data}){
+  const r=data||DEMO;
+  const pc=r.markets?.portfolioChanges||{};
+  return React.createElement("div",null,
+    React.createElement("div",{className:"g2",style:{marginBottom:14}},
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"Indices",icon:"ti-chart-line"}),
+        (r.markets?.indices||[]).map((m,i)=>React.createElement("div",{key:i,className:"mkt-row"},
+          React.createElement("span",{className:"mkt-name"},m.name),
+          React.createElement("span",null,React.createElement("span",{className:"mkt-val"},m.value),React.createElement(MktChg,m))
+        )),
+        r.markets?.insight&&React.createElement("div",{className:"mkt-insight"},r.markets.insight)
+      ),
+      React.createElement("div",{className:"card"},
+        React.createElement(CH,{title:"Situations to monitor",icon:"ti-radar"}),
+        (r.markets?.situations||[]).map((s,i)=>React.createElement("div",{key:i,className:"sit-item"},
+          React.createElement("div",{className:"sit-topic"},s.topic),
+          React.createElement("div",{className:"sit-text"},s.update)
+        ))
+      )
+    ),
+    React.createElement("div",{className:"card"},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}},
+        React.createElement(CH,{title:"Your portfolio",icon:"ti-wallet"}),
+        React.createElement("div",{style:{display:"flex",gap:20,fontSize:10,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",color:"#5A4E42"}},
+          React.createElement("span",{style:{minWidth:52,textAlign:"right"}},"Daily"),
+          React.createElement("span",{style:{minWidth:52,textAlign:"right"}},"Monthly")
+        )
+      ),
+      PORTFOLIO.map((p,i)=>{
+        const c=pc[p.short];
+        return React.createElement("div",{key:i,className:"pfol-row"},
+          React.createElement(PBadge,{type:p.type}),
+          React.createElement("span",{className:"pfol-name"},p.name),
+          React.createElement("div",{style:{display:"flex",gap:16,flexShrink:0}},
+            React.createElement("div",{className:"pfol-chg-val",style:{color:c?.dailyUp?"#4CAF7D":c?.dailyUp===false?"#C0451A":"#5A4E42"}},c?.daily||"\u2013"),
+            React.createElement("div",{className:"pfol-chg-val",style:{color:c?.monthlyUp?"#4CAF7D":c?.monthlyUp===false?"#C0451A":"#5A4E42"}},c?.monthly||"\u2013")
+          )
+        );
+      })
+    )
+  );
+}
+
+// ── News view ──────────────────────────────────────────────────
+function NewsView({data}){
+  const r=data||DEMO;
+  return React.createElement("div",null,
+    React.createElement("div",{className:"g3",style:{marginBottom:14}},
+      (r.news||[]).map((s,i)=>React.createElement("div",{key:i,className:"card"},
+        React.createElement("div",{className:"news-topic-hd",style:{color:s.color||"#E8781A"}},s.topic),
+        React.createElement("ul",{className:"nb"},(s.bullets||[]).map((b,j)=>React.createElement("li",{key:j},b)))
+      ))
+    ),
+    (r.quickHits||[]).length>0&&React.createElement("div",{className:"card"},
+      React.createElement(CH,{title:"Quick hits",icon:"ti-bolt"}),
+      React.createElement("ul",{className:"qh"},r.quickHits.map((h,i)=>React.createElement("li",{key:i},h)))
+    )
+  );
+}
+
+// ── To-Do view ─────────────────────────────────────────────────
+function TodoView({todos,onAddTodo,onToggleTodo,onDeleteTodo,onClearCompleted}){
+  const[inp,setInp]=useState("");
+  function submit(e){e.preventDefault();if(inp.trim()){onAddTodo(inp.trim());setInp("");}}
+  return React.createElement("div",{style:{maxWidth:580}},
+    React.createElement("div",{className:"card"},
+      React.createElement(CH,{title:"Tasks \u00b7 "+todos.filter(t=>!t.done).length+" remaining",icon:"ti-checkbox"}),
+      todos.length===0?React.createElement("p",{className:"t-empty"},"Nothing on the list yet."):
+      todos.map(t=>React.createElement("div",{key:t.id,className:"todo-item"},
+        React.createElement("div",{className:"cb"+(t.done?" on":""),onClick:()=>onToggleTodo(t.id)},
+          t.done&&React.createElement("i",{className:"ti ti-check",style:{fontSize:10,color:"#fff"}})
+        ),
+        React.createElement("span",{className:"tt"+(t.done?" done":"")},t.text),
+        React.createElement("button",{className:"tdel",onClick:()=>onDeleteTodo(t.id)},"\u00d7")
+      )),
+      React.createElement("form",{onSubmit:submit,className:"t-add"},
+        React.createElement("input",{className:"t-input",value:inp,onChange:e=>setInp(e.target.value),placeholder:"Add a task..."}),
+        React.createElement("button",{type:"submit",className:"t-btn"},"Add")
+      ),
+      todos.some(t=>t.done)&&React.createElement("button",{className:"clr-btn",onClick:onClearCompleted},"Clear completed")
+    )
+  );
+}
+
+// ── Reading view — by genre ────────────────────────────────────
+function ReadingView({data}){
+  const r=data||DEMO;
+  const reading=r.reading||DEMO.reading;
+  const hasAny=Object.values(reading).some(arr=>arr&&arr.length>0);
+  if(!hasAny)return React.createElement("div",{className:"card"},
+    React.createElement(CH,{title:"What to read & watch",icon:"ti-headphones"}),
+    React.createElement("p",{style:{fontSize:13,color:"#5A4E42",fontStyle:"italic",padding:"8px 0"}},"Hit Refresh to load today\u2019s reading and watching picks.")
+  );
+  return React.createElement("div",null,
+    Object.entries(GENRE_CFG).map(([key,cfg])=>{
+      const items=reading[key]||[];
+      if(!items.length)return null;
+      return React.createElement("div",{key,className:"card",style:{marginBottom:14}},
+        React.createElement("div",{className:"genre-header"},
+          React.createElement("div",{className:"genre-icon",style:{background:cfg.bg,border:"1px solid "+cfg.color}},
+            React.createElement("i",{className:"ti "+cfg.icon,style:{fontSize:15,color:cfg.color}})
+          ),
+          React.createElement("span",{className:"genre-label"},cfg.label)
+        ),
+        items.map((item,i)=>React.createElement("div",{key:i,className:"rec-item"},
+          React.createElement(RecTag,{type:item.type}),
+          React.createElement("div",null,
+            React.createElement("div",{className:"rec-title"},item.title),
+            React.createElement("div",{className:"rec-why"},item.why),
+            React.createElement("div",{className:"rec-meta"},item.meta)
+          )
+        ))
+      );
+    }).filter(Boolean)
+  );
+}
+
+// ── Recipes view ───────────────────────────────────────────────
+function RecipesView(){
+  const rec=todayRecipe();
+  const today=new Date();
+  const doy=Math.floor((today-new Date(today.getFullYear(),0,0))/864e5);
+  const upcoming=Array.from({length:6},(_,i)=>RECIPES[(doy+i+1)%RECIPES.length]);
+  return React.createElement("div",{style:{maxWidth:600}},
+    React.createElement("div",{className:"card",style:{background:"#1A2818",borderColor:"#2D6A4F",marginBottom:14}},
+      React.createElement(CH,{title:"Tonight\u2019s pick",icon:"ti-chef-hat"}),
+      React.createElement("div",{className:"recipe-tag"},"Late summer \u00b7 Dinner"),
+      React.createElement("div",{className:"recipe-name"},rec.name),
+      React.createElement("div",{className:"recipe-desc"},rec.desc),
+      React.createElement("div",{style:{fontSize:11,color:"#5A4E42",marginBottom:14}},"\u23f1 "+rec.time),
+      React.createElement("a",{href:rec.url,target:"_blank",rel:"noopener",className:"recipe-link"},
+        React.createElement("i",{className:"ti ti-external-link",style:{fontSize:13}}),"Full recipe on BBC Good Food"
+      )
+    ),
+    React.createElement("div",{className:"card"},
+      React.createElement(CH,{title:"Coming up",icon:"ti-calendar"}),
+      upcoming.map((r,i)=>React.createElement("div",{key:i,style:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i<5?"1px solid #2A2018":"none"}},
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:13,color:"#C8BAA8",fontWeight:500}},r.name),
+          React.createElement("div",{style:{fontSize:11,color:"#5A4E42",marginTop:2}},r.desc)
+        ),
+        React.createElement("span",{style:{fontSize:11,color:"#3A2E24",flexShrink:0,marginLeft:14}},r.time)
+      ))
+    )
+  );
+}
+
+// ── Settings view ──────────────────────────────────────────────
+function SettingsView({onSaveKey,savedKey,countdowns,onAddCountdown,onDeleteCountdown,onSaveAdzuna,savedAdzuna}){
+  const[key,setKey]=useState("");const[ks,setKs]=useState(false);
+  const[name,setName]=useState("");const[date,setDate]=useState("");
+  const[azId,setAzId]=useState("");const[azKey,setAzKey]=useState("");const[azSaved,setAzSaved]=useState(false);
+  function submitAdzuna(e){e.preventDefault();if(azId.trim()&&azKey.trim()){onSaveAdzuna(azId.trim(),azKey.trim());setAzSaved(true);setTimeout(()=>setAzSaved(false),4000);}}
+  function submitKey(e){e.preventDefault();if(key.trim()){onSaveKey(key.trim());setKs(true);setKey("");setTimeout(()=>setKs(false),3000);}}
+  function submitEvt(e){e.preventDefault();if(name.trim()&&date){onAddCountdown({id:Date.now()+"",name:name.trim(),date});setName("");setDate("");}}
+  const sorted=[...countdowns].map(c=>({...c,days:daysUntil(c.date)})).sort((a,b)=>a.days-b.days);
+  return React.createElement("div",null,
+    React.createElement("div",{className:"settings-section"},
+      React.createElement("div",{className:"settings-lbl"},"What loads automatically",React.createElement("span",{className:"free-badge"},"Free")),
+      React.createElement("div",{style:{background:"#1A2A1A",border:"1px solid #2D6A4F",borderRadius:8,padding:"12px 14px",marginBottom:4}},
+        React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#4CAF7D",marginBottom:8}},"No key needed"),
+        React.createElement("ul",{style:{listStyle:"none",display:"flex",flexDirection:"column",gap:6}},
+          ["\u2713 London weather — live from wttr.in every page open","\u2713 To-Do list — persists in your browser","\u2713 Countdown events — persists in your browser","\u2713 Recipe of the day — rotates by date"].map((item,i)=>
+            React.createElement("li",{key:i,style:{fontSize:12,color:"#8A7D6E"}},item)
+          )
+        )
+      )
+    ),
+    React.createElement("hr",{className:"settings-divider"}),
+    React.createElement("div",{className:"settings-section"},
+      React.createElement("div",{className:"settings-lbl"},"Anthropic API key",React.createElement("span",{className:"paid-badge"},"~35p/month")),
+      React.createElement("div",{className:"api-note"},
+        React.createElement("div",{className:"api-note-title"},React.createElement("i",{className:"ti ti-lock",style:{fontSize:14}}),"Browser-only"),
+        React.createElement("div",{className:"api-note-text"},"Saves to your browser\u2019s local storage only. Never goes in your GitHub repo. Get a key at console.anthropic.com.")
+      ),
+      React.createElement("div",{style:{background:"#231E1A",border:"1px solid #2A2018",borderRadius:8,padding:"12px 14px",marginBottom:12,fontSize:12,color:"#8A7D6E",lineHeight:1.7}},
+        React.createElement("div",{style:{fontWeight:600,color:"#C49A3C",marginBottom:6}},"What the Refresh button fetches:"),
+        React.createElement("ul",{style:{listStyle:"none",display:"flex",flexDirection:"column",gap:4}},
+          ["\u2192 News across 7 topics (AI, Business, Football, Cricket, Sports, London)","\u2192 Story of the day","\u2192 Markets \u2014 FTSE, S&P, GBP/USD, Gold, GBP/EUR","\u2192 Portfolio changes for META & GOOGL","\u2192 Arsenal results & upcoming fixtures","\u2192 Reading & watching picks by genre","\u2192 Quick hits"].map((item,i)=>
+            React.createElement("li",{key:i},item)
+          )
+        ),
+        React.createElement("div",{style:{marginTop:8,color:"#5A4E42"}},"Model: Claude Haiku 4.5 \u00b7 ~\u00a30.02 per refresh \u00b7 ~\u00a30.44/month weekdays")
+      ),
+      React.createElement("p",{className:"settings-note",style:{marginBottom:8}},savedKey?"\u2713 Key saved \u2014 Refresh button is active.":"Paste your key below to enable the Refresh button."),
+      React.createElement("form",{onSubmit:submitKey},
+        React.createElement("input",{className:"settings-input",type:"password",value:key,onChange:e=>setKey(e.target.value),placeholder:"sk-ant-..."}),
+        React.createElement("button",{type:"submit",className:"settings-btn"},"Save key"),
+        ks&&React.createElement("div",{className:"settings-success"},"\u2713 Saved")
+      )
+    ),
+    React.createElement("hr",{className:"settings-divider"}),
+    React.createElement("div",{className:"settings-section"},
+      React.createElement("div",{className:"settings-lbl"},"Adzuna job listings",React.createElement("span",{className:"free-badge"},"Free")),
+      React.createElement("div",{style:{background:"#231E1A",border:"1px solid #2A2018",borderRadius:8,padding:"12px 14px",marginBottom:12,fontSize:12,color:"#8A7D6E",lineHeight:1.7}},
+        "Register free at developer.adzuna.com — no credit card, 250 calls/day. Loads senior BA roles in London automatically on every page open."
+      ),
+      React.createElement("p",{className:"settings-note",style:{marginBottom:8}},
+        (savedAdzuna?"✓ Keys saved — job listings auto-load.":"Paste your Adzuna App ID and App Key below.")
+      ),
+      React.createElement("form",{onSubmit:submitAdzuna},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}},
+          React.createElement("input",{className:"settings-input",value:azId,onChange:e=>setAzId(e.target.value),placeholder:"App ID (e.g. 12345)"}),
+          React.createElement("input",{className:"settings-input",value:azKey,onChange:e=>setAzKey(e.target.value),placeholder:"App Key (alphanumeric)"})
+        ),
+        React.createElement("button",{type:"submit",className:"settings-btn"},"Save & load jobs"),
+        azSaved&&React.createElement("div",{className:"settings-success"},"✓ Saved — job listings loading now")
+      )
+    ),
+    React.createElement("hr",{className:"settings-divider"}),
+    React.createElement("div",{className:"settings-section"},
+      React.createElement("div",{className:"settings-lbl"},"Countdown events"),
+      React.createElement("p",{className:"settings-note",style:{marginBottom:12}},"Add birthdays, holidays, or any dates to count down to on the home screen."),
+      sorted.length>0&&React.createElement("div",{className:"card",style:{marginBottom:14}},
+        sorted.map(c=>React.createElement("div",{key:c.id,className:"cd-event-row"},
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{className:"cd-event-name"},c.name),
+            React.createElement("div",{className:"cd-event-date"},fmtDate(c.date))
+          ),
+          React.createElement("div",{className:"cd-event-days"},c.days>=0?c.days+" days":"past"),
+          React.createElement("button",{className:"cd-event-del",onClick:()=>onDeleteCountdown(c.id)},"\u00d7")
+        ))
+      ),
+      React.createElement("form",{onSubmit:submitEvt},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:8}},
+          React.createElement("input",{className:"settings-input",value:name,onChange:e=>setName(e.target.value),placeholder:"Event name (e.g. Dubai holiday)"}),
+          React.createElement("input",{className:"settings-input",type:"date",value:date,onChange:e=>setDate(e.target.value),style:{width:160}})
+        ),
+        React.createElement("button",{type:"submit",className:"settings-btn"},"Add event")
+      )
+    )
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────────
+function App(){
+  const[view,setView]=useState("home");
+  const[data,setData]=useState(DEMO);
+  const[lastUpdated,setLastUpdated]=useState(null);
+  const[refreshing,setRefreshing]=useState(false);
+  const[todos,setTodos]=useState([]);
+  const[apiKey,setApiKey]=useState("");
+  const[countdowns,setCountdowns]=useState([]);
+  const[weather,setWeather]=useState(null);
+  const[jobs,setJobs]=useState([]);
+  const[jobsLoading,setJobsLoading]=useState(false);
+  const[adzunaId,setAdzunaId]=useState("");
+  const[adzunaKey,setAdzunaKey]=useState("");
+  const[wxLoading,setWxLoading]=useState(true);
+
+  // Load everything from storage on mount, then auto-fetch weather
+  useEffect(()=>{(async()=>{
+    try{
+      const rs=await Promise.allSettled([
+        store.get("morning-data"),
+        store.get("morning-last-updated"),
+        store.get("morning-todos"),
+        store.get("morning-api-key"),
+        store.get("morning-countdowns")
+      ]);
+      const[d,lu,t,k,cd]=rs;
+      if(d.status==="fulfilled"&&d.value)setData(JSON.parse(d.value.value));
+      if(lu.status==="fulfilled"&&lu.value)setLastUpdated(lu.value.value);
+      if(t.status==="fulfilled"&&t.value)setTodos(JSON.parse(t.value.value));
+      if(k.status==="fulfilled"&&k.value)setApiKey(k.value.value);
+      if(cd.status==="fulfilled"&&cd.value)setCountdowns(JSON.parse(cd.value.value));
+      const loadedId=aid.status==="fulfilled"&&aid.value?aid.value.value:"";
+      const loadedKey=akey.status==="fulfilled"&&akey.value?akey.value.value:"";
+      if(loadedId)setAdzunaId(loadedId);
+      if(loadedKey)setAdzunaKey(loadedKey);
+      if(loadedId&&loadedKey){fetchJobs(loadedId,loadedKey);}
+    }catch(e){}
+    // Auto-fetch weather from wttr.in — free, no key needed
+    fetchWeather();
+  })();},[]);
+
+  async function fetchWeather(){
+    setWxLoading(true);
+    try{
+      const res=await fetch("https://wttr.in/London?format=j1");
+      const d=await res.json();
+      const wx=parseWttr(d);
+      if(wx)setWeather(wx);
+    }catch(e){console.error("Weather fetch failed:",e);}
+    finally{setWxLoading(false);}
+  }
+
+  // Todo helpers
+  async function saveTodos(t){setTodos(t);try{await store.set("morning-todos",JSON.stringify(t));}catch(e){}}
+  const addTodo=useCallback(async tx=>{await saveTodos([...todos,{id:Date.now()+"",text:tx,done:false,created:new Date().toISOString()}]);},[todos]);
+  const toggleTodo=useCallback(async id=>{await saveTodos(todos.map(t=>t.id===id?{...t,done:!t.done}:t));},[todos]);
+  const deleteTodo=useCallback(async id=>{await saveTodos(todos.filter(t=>t.id!==id));},[todos]);
+  const clearCompleted=useCallback(async()=>{await saveTodos(todos.filter(t=>!t.done));},[todos]);
+
+  // Countdown helpers
+  async function saveCDs(cd){setCountdowns(cd);try{await store.set("morning-countdowns",JSON.stringify(cd));}catch(e){}}
+  const addCD=useCallback(async e=>{await saveCDs([...countdowns,e]);},[countdowns]);
+  const delCD=useCallback(async id=>{await saveCDs(countdowns.filter(c=>c.id!==id));},[countdowns]);
+
+  async function fetchJobs(id,key){
+    const appId=id||adzunaId;const appKey=key||adzunaKey;
+    if(!appId||!appKey)return;
+    setJobsLoading(true);
+    try{
+      const url="https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id="+appId+"&app_key="+appKey+"&what=senior+business+analyst&where=London&results_per_page=10&sort_by=date&salary_min=45000&content-type=application/json";
+      const res=await fetch(url);
+      if(!res.ok)throw new Error("Adzuna error "+res.status);
+      const d=await res.json();
+      setJobs(d.results||[]);
+    }catch(e){console.error("Jobs fetch failed:",e);}
+    finally{setJobsLoading(false);}
+  }
+
+
+  async function saveKey(k){setApiKey(k);try{await store.set("morning-api-key",k);}catch(e){}}
+
+  async function saveAdzuna(id,key){
+    setAdzunaId(id);setAdzunaKey(key);
+    try{
+      await Promise.allSettled([
+        store.set("morning-adzuna-id",id),
+        store.set("morning-adzuna-key",key)
+      ]);
+      if(id&&key)fetchJobs(id,key);
+    }catch(e){}
+  }
+
+
+  // Refresh — Haiku 4.5 for news, story, markets, Arsenal, reading
+  async function refresh(){
+    if(!apiKey){alert("Add your Anthropic API key in Settings first.");setView("settings");return;}
+    setRefreshing(true);
+    try{
+      const today=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+      const SYS=`Today is ${today}, London UK. Search for current news and data. Return ONLY valid JSON with no other text or markdown. Structure:
+{"opening":"one warm sentence with today's specific context","story":{"headline":"string","body":"2-3 sentence narrative"},"news":[{"topic":"string","color":"string","bullets":["string","string","string"]}],"markets":{"indices":[{"name":"string","value":"string","change":"string","up":boolean}],"portfolioChanges":{"META":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean},"GOOGL":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean}},"insight":"string","situations":[{"topic":"string","update":"string"}]},"arsenal":{"lastResults":[{"opponent":"string","home":boolean,"score":"string","result":"W|D|L","competition":"string","date":"string"}],"nextFixtures":[{"opponent":"string","home":boolean,"competition":"string","date":"string"}]},"reading":{"sport":[{"type":"PODCAST|YOUTUBE|READ|WATCH","title":"string","why":"string","meta":"string"}],"techAI":[{"type":"string","title":"string","why":"string","meta":"string"}],"business":[{"type":"string","title":"string","why":"string","meta":"string"}],"culture":[]},"quickHits":["string"]}
+News topics and colors: AI & Tech (#2A5A8A), Business (#8A6020), Football (#1A5A1A), Cricket (#7A4A2A), Sports Business (#3A2A6A), Sports Headlines (#2A4A6A), London (#2A4A3A). 2-3 bullets each.
+Markets: FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR only. Search META and GOOGL current price for portfolio changes.
+Arsenal: search for most recent results and next Premier League fixtures.
+Situations: Sports Streaming Rights, AI Regulation.
+Reading: 2 items per genre for sport, techAI, business. Culture can be empty.
+5 quickHits — surprising, fun, or useful one-liners.`;
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:3000,
+          tools:[{"type":"web_search_20250305","name":"web_search"}],
+          system:SYS,
+          messages:[{role:"user",content:"Generate my morning brief."}]
+        })
+      });
+      const rd=await res.json();
+      if(rd.error)throw new Error(rd.error.message);
+      const tb=rd.content.find(b=>b.type==="text");
+      if(tb){
+        const clean=tb.text.trim().replace(/^```json\s*/,"").replace(/\s*```$/,"");
+        const nd=JSON.parse(clean);
+        const now=new Date().toISOString();
+        setData(nd);setLastUpdated(now);
+        await Promise.allSettled([
+          store.set("morning-data",JSON.stringify(nd)),
+          store.set("morning-last-updated",now)
+        ]);
+        // Also re-fetch weather so it's fresh
+        fetchWeather();
+      }
+    }catch(e){console.error(e);alert("Refresh failed: "+e.message);}
+    finally{setRefreshing(false);}
+  }
+
+  const fmtUpd=iso=>{
+    if(!iso)return"Demo data \u00b7 hit Refresh for live content";
+    const d=new Date(iso);
+    return"News refreshed "+d.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+" \u00b7 "+d.toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+  };
+  const todayStr=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+  function renderView(){
+    switch(view){
+      case"home":return React.createElement(HomeView,{data,weather,wxLoading,todos,onAddTodo:addTodo,onToggleTodo:toggleTodo,countdowns,onGoSettings:()=>setView("settings"),lastUpdated,onRefresh:refresh});
+      case"markets":return React.createElement(MarketsView,{data});
+      case"news":return React.createElement(NewsView,{data});
+      case"todo":return React.createElement(TodoView,{todos,onAddTodo:addTodo,onToggleTodo:toggleTodo,onDeleteTodo:deleteTodo,onClearCompleted:clearCompleted});
+      case"reading":return React.createElement(ReadingView,{data});
+      case"jobs":return React.createElement(JobsView,{jobs,loading:jobsLoading,hasKeys:!!(adzunaId&&adzunaKey),onGoSettings:()=>setView("settings")});
+      case"recipes":return React.createElement(RecipesView,null);
+      case"settings":return React.createElement(SettingsView,{onSaveKey:saveKey,savedKey:!!apiKey,countdowns,onAddCountdown:addCD,onDeleteCountdown:delCD,onSaveAdzuna:saveAdzuna,savedAdzuna:!!(adzunaId&&adzunaKey)});
+      default:return null;
+    }
+  }
+
+  return React.createElement("div",{className:"dash"},
+    React.createElement("div",{className:"sb"},
+      React.createElement("div",{className:"sb-logo"},
+        React.createElement("div",{className:"sb-brand"},"Morning Brief"),
+        React.createElement("div",{className:"sb-tagline"},"Personal dashboard")
+      ),
+      React.createElement("nav",{className:"sb-nav"},
+        NAV.map(n=>React.createElement("div",{key:n.id,className:"nav-item"+(view===n.id?" active":""),onClick:()=>setView(n.id)},
+          React.createElement("i",{className:"ti "+n.icon}),n.label
+        ))
+      ),
+      React.createElement("div",{className:"sb-footer"},"v4.0 \u00b7 Haiku 4.5")
+    ),
+    React.createElement("div",{className:"main"},
+      React.createElement("div",{className:"topbar"},
+        React.createElement("div",null,
+          React.createElement("div",{className:"topbar-date"},todayStr),
+          React.createElement("div",{className:"topbar-upd"},fmtUpd(lastUpdated))
+        ),
+        React.createElement("div",{className:"topbar-right"},
+          React.createElement("div",{className:"wx-status"},
+            React.createElement("div",{className:"wx-dot"+(wxLoading?" loading":"")}),
+            wxLoading?"Weather loading\u2026":"Weather live"
+          ),
+          React.createElement("button",{className:"refresh-btn",onClick:refresh,disabled:refreshing},
+            React.createElement("i",{className:"ti "+(refreshing?"ti-loader-2":"ti-refresh"),style:{fontSize:14}}),
+            refreshing?"Refreshing\u2026":"Refresh news"
+          )
+        )
+      ),
+      React.createElement("div",{className:"content"},renderView())
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
