@@ -183,7 +183,24 @@ body{color:#F0E8DC;font-family:-apple-system,"Segoe UI",sans-serif;font-size:14p
 /* STALE CONTENT NOTICE */
 .stale-notice{background:#2A1E10;border:1px solid #5A3A10;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#C49A3C;display:flex;align-items:center;gap:8px}
 .stale-notice i{font-size:14px;flex-shrink:0}
-@media(max-width:900px){.g3{grid-template-columns:1fr 1fr}.g2w{grid-template-columns:1fr}}
+/* JOBS */
+.jobs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.job-card{background:#1C1815;border-radius:12px;border:1px solid #2A2018;padding:16px 18px;display:flex;flex-direction:column;gap:0}
+.job-title{font-size:14px;font-weight:700;color:#F0E8DC;margin-bottom:5px;line-height:1.4}
+.job-company{font-size:12px;color:#E8781A;font-weight:600;margin-bottom:4px}
+.job-meta{display:flex;gap:10px;font-size:11px;color:#5A4E42;margin-bottom:6px;flex-wrap:wrap}
+.job-salary{font-size:12px;color:#4CAF7D;font-weight:600;margin-bottom:8px}
+.job-desc{font-size:12px;color:#8A7D6E;line-height:1.55;margin-bottom:12px;flex:1}
+.job-link{display:inline-flex;align-items:center;gap:5px;background:#2A1E10;color:#E8781A;text-decoration:none;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:600;border:1px solid #5A3A10;align-self:flex-start}
+.job-link:hover{background:#3A2A14}
+.jobs-empty{font-size:13px;color:#5A4E42;font-style:italic;padding:12px 0}
+.jobs-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:#5A4E42;padding:20px 0}
+.jobs-setup{background:#231E1A;border:1px solid #3A2E24;border-radius:10px;padding:20px 22px}
+.jobs-setup-title{font-size:14px;font-weight:600;color:#F0E8DC;margin-bottom:8px}
+.jobs-setup-text{font-size:12.5px;color:#8A7D6E;line-height:1.65;margin-bottom:14px}
+.jobs-setup-link{display:inline-flex;align-items:center;gap:5px;background:#E8781A;color:#fff;text-decoration:none;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.jobs-setup-link:hover{background:#C45E0D}
+@media(max-width:900px){.g3{grid-template-columns:1fr 1fr}.g2w{grid-template-columns:1fr}.jobs-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.sb{display:none}.g3,.g2,.g2w{grid-template-columns:1fr}}
 </style>
 </head>
@@ -206,6 +223,7 @@ const NAV=[
   {id:"news",icon:"ti-news",label:"News"},
   {id:"todo",icon:"ti-checkbox",label:"To-Do"},
   {id:"reading",icon:"ti-headphones",label:"Reading"},
+  {id:"jobs",icon:"ti-briefcase",label:"Jobs"},
   {id:"recipes",icon:"ti-chef-hat",label:"Recipes"},
   {id:"settings",icon:"ti-settings",label:"Settings"}
 ];
@@ -335,6 +353,23 @@ function parseWttr(d){
     };
   }catch(e){return null;}
 }
+
+function fmtSalary(min,max){
+  if(!min&&!max)return null;
+  const fmt=n=>"£"+Math.round(n).toLocaleString("en-GB");
+  if(min&&max)return fmt(min)+" – "+fmt(max);
+  if(min)return fmt(min)+"+";
+  if(max)return "Up to "+fmt(max);
+  return null;
+}
+function fmtAgo(dateStr){
+  const d=new Date(dateStr);const now=new Date();
+  const days=Math.floor((now-d)/864e5);
+  if(days===0)return"Today";if(days===1)return"Yesterday";
+  if(days<7)return days+"d ago";if(days<30)return Math.floor(days/7)+"w ago";
+  return Math.floor(days/30)+"mo ago";
+}
+function stripHtml(html){return(html||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim();}
 
 // ── Small presentational components ───────────────────────────
 function CH({title,icon}){return React.createElement("div",{className:"ch"},icon&&React.createElement("i",{className:"ti "+icon}),title);}
@@ -510,6 +545,51 @@ function HomeView({data,weather,wxLoading,todos,onAddTodo,onToggleTodo,countdown
   );
 }
 
+
+// ── Jobs view — Adzuna auto-fetch —————————————————————
+function JobsView({jobs,loading,hasKeys,onGoSettings}){
+  if(!hasKeys)return React.createElement("div",{className:"jobs-setup"},
+    React.createElement("div",{className:"jobs-setup-title"},"Set up job listings"),
+    React.createElement("div",{className:"jobs-setup-text"},
+      "Job listings auto-load from Adzuna — the UK’s largest job aggregator — every time you open this page. It’s free and takes about 2 minutes to set up.\n\nYou’ll need a free Adzuna App ID and App Key from developer.adzuna.com. Once added in Settings, relevant roles load automatically each morning."
+    ),
+    React.createElement("button",{className:"jobs-setup-link",onClick:onGoSettings},
+      React.createElement("i",{className:"ti ti-settings",style:{fontSize:14}}),"Add keys in Settings"
+    )
+  );
+  if(loading)return React.createElement("div",{className:"jobs-loading"},
+    React.createElement("i",{className:"ti ti-loader-2",style:{fontSize:16}}),
+    "Loading job listings…"
+  );
+  if(!jobs||!jobs.length)return React.createElement("p",{className:"jobs-empty"},"No listings found. Try adjusting your search terms in Settings.");
+  return React.createElement("div",null,
+    React.createElement("div",{style:{fontSize:12,color:"#5A4E42",marginBottom:14}},
+      "Showing "+jobs.length+" roles · Senior Business Analyst · London · Sorted by date · via Adzuna"
+    ),
+    React.createElement("div",{className:"jobs-grid"},
+      jobs.map((j,i)=>{
+        const salary=fmtSalary(j.salary_min,j.salary_max);
+        const desc=stripHtml(j.description).slice(0,160)+"...";
+        const ago=fmtAgo(j.created);
+        return React.createElement("div",{key:i,className:"job-card"},
+          React.createElement("div",{className:"job-title"},j.title),
+          React.createElement("div",{className:"job-company"},j.company&&j.company.display_name||"–"),
+          React.createElement("div",{className:"job-meta"},
+            React.createElement("span",null,React.createElement("i",{className:"ti ti-map-pin",style:{fontSize:11,marginRight:3}}),j.location&&j.location.display_name||"London"),
+            React.createElement("span",null,React.createElement("i",{className:"ti ti-clock",style:{fontSize:11,marginRight:3}}),ago),
+            j.contract_type&&React.createElement("span",null,j.contract_type)
+          ),
+          salary&&React.createElement("div",{className:"job-salary"},salary),
+          React.createElement("div",{className:"job-desc"},desc),
+          React.createElement("a",{href:j.redirect_url,target:"_blank",rel:"noopener",className:"job-link"},
+            React.createElement("i",{className:"ti ti-external-link",style:{fontSize:12}}),"View role"
+          )
+        );
+      })
+    )
+  );
+}
+
 // ── Markets view ───────────────────────────────────────────────
 function MarketsView({data}){
   const r=data||DEMO;
@@ -660,9 +740,11 @@ function RecipesView(){
 }
 
 // ── Settings view ──────────────────────────────────────────────
-function SettingsView({onSaveKey,savedKey,countdowns,onAddCountdown,onDeleteCountdown}){
+function SettingsView({onSaveKey,savedKey,countdowns,onAddCountdown,onDeleteCountdown,onSaveAdzuna,savedAdzuna}){
   const[key,setKey]=useState("");const[ks,setKs]=useState(false);
   const[name,setName]=useState("");const[date,setDate]=useState("");
+  const[azId,setAzId]=useState("");const[azKey,setAzKey]=useState("");const[azSaved,setAzSaved]=useState(false);
+  function submitAdzuna(e){e.preventDefault();if(azId.trim()&&azKey.trim()){onSaveAdzuna(azId.trim(),azKey.trim());setAzSaved(true);setTimeout(()=>setAzSaved(false),4000);}}
   function submitKey(e){e.preventDefault();if(key.trim()){onSaveKey(key.trim());setKs(true);setKey("");setTimeout(()=>setKs(false),3000);}}
   function submitEvt(e){e.preventDefault();if(name.trim()&&date){onAddCountdown({id:Date.now()+"",name:name.trim(),date});setName("");setDate("");}}
   const sorted=[...countdowns].map(c=>({...c,days:daysUntil(c.date)})).sort((a,b)=>a.days-b.days);
@@ -703,6 +785,24 @@ function SettingsView({onSaveKey,savedKey,countdowns,onAddCountdown,onDeleteCoun
     ),
     React.createElement("hr",{className:"settings-divider"}),
     React.createElement("div",{className:"settings-section"},
+      React.createElement("div",{className:"settings-lbl"},"Adzuna job listings",React.createElement("span",{className:"free-badge"},"Free")),
+      React.createElement("div",{style:{background:"#231E1A",border:"1px solid #2A2018",borderRadius:8,padding:"12px 14px",marginBottom:12,fontSize:12,color:"#8A7D6E",lineHeight:1.7}},
+        "Register free at developer.adzuna.com — no credit card, 250 calls/day. Loads senior BA roles in London automatically on every page open."
+      ),
+      React.createElement("p",{className:"settings-note",style:{marginBottom:8}},
+        (savedAdzuna?"✓ Keys saved — job listings auto-load.":"Paste your Adzuna App ID and App Key below.")
+      ),
+      React.createElement("form",{onSubmit:submitAdzuna},
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}},
+          React.createElement("input",{className:"settings-input",value:azId,onChange:e=>setAzId(e.target.value),placeholder:"App ID (e.g. 12345)"}),
+          React.createElement("input",{className:"settings-input",value:azKey,onChange:e=>setAzKey(e.target.value),placeholder:"App Key (alphanumeric)"})
+        ),
+        React.createElement("button",{type:"submit",className:"settings-btn"},"Save & load jobs"),
+        azSaved&&React.createElement("div",{className:"settings-success"},"✓ Saved — job listings loading now")
+      )
+    ),
+    React.createElement("hr",{className:"settings-divider"}),
+    React.createElement("div",{className:"settings-section"},
       React.createElement("div",{className:"settings-lbl"},"Countdown events"),
       React.createElement("p",{className:"settings-note",style:{marginBottom:12}},"Add birthdays, holidays, or any dates to count down to on the home screen."),
       sorted.length>0&&React.createElement("div",{className:"card",style:{marginBottom:14}},
@@ -736,6 +836,10 @@ function App(){
   const[apiKey,setApiKey]=useState("");
   const[countdowns,setCountdowns]=useState([]);
   const[weather,setWeather]=useState(null);
+  const[jobs,setJobs]=useState([]);
+  const[jobsLoading,setJobsLoading]=useState(false);
+  const[adzunaId,setAdzunaId]=useState("");
+  const[adzunaKey,setAdzunaKey]=useState("");
   const[wxLoading,setWxLoading]=useState(true);
 
   // Load everything from storage on mount, then auto-fetch weather
@@ -754,6 +858,11 @@ function App(){
       if(t.status==="fulfilled"&&t.value)setTodos(JSON.parse(t.value.value));
       if(k.status==="fulfilled"&&k.value)setApiKey(k.value.value);
       if(cd.status==="fulfilled"&&cd.value)setCountdowns(JSON.parse(cd.value.value));
+      const loadedId=aid.status==="fulfilled"&&aid.value?aid.value.value:"";
+      const loadedKey=akey.status==="fulfilled"&&akey.value?akey.value.value:"";
+      if(loadedId)setAdzunaId(loadedId);
+      if(loadedKey)setAdzunaKey(loadedKey);
+      if(loadedId&&loadedKey){fetchJobs(loadedId,loadedKey);}
     }catch(e){}
     // Auto-fetch weather from wttr.in — free, no key needed
     fetchWeather();
@@ -782,7 +891,34 @@ function App(){
   const addCD=useCallback(async e=>{await saveCDs([...countdowns,e]);},[countdowns]);
   const delCD=useCallback(async id=>{await saveCDs(countdowns.filter(c=>c.id!==id));},[countdowns]);
 
+  async function fetchJobs(id,key){
+    const appId=id||adzunaId;const appKey=key||adzunaKey;
+    if(!appId||!appKey)return;
+    setJobsLoading(true);
+    try{
+      const url="https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id="+appId+"&app_key="+appKey+"&what=senior+business+analyst&where=London&results_per_page=10&sort_by=date&salary_min=45000&content-type=application/json";
+      const res=await fetch(url);
+      if(!res.ok)throw new Error("Adzuna error "+res.status);
+      const d=await res.json();
+      setJobs(d.results||[]);
+    }catch(e){console.error("Jobs fetch failed:",e);}
+    finally{setJobsLoading(false);}
+  }
+
+
   async function saveKey(k){setApiKey(k);try{await store.set("morning-api-key",k);}catch(e){}}
+
+  async function saveAdzuna(id,key){
+    setAdzunaId(id);setAdzunaKey(key);
+    try{
+      await Promise.allSettled([
+        store.set("morning-adzuna-id",id),
+        store.set("morning-adzuna-key",key)
+      ]);
+      if(id&&key)fetchJobs(id,key);
+    }catch(e){}
+  }
+
 
   // Refresh — Haiku 4.5 for news, story, markets, Arsenal, reading
   async function refresh(){
@@ -842,8 +978,9 @@ Reading: 2 items per genre for sport, techAI, business. Culture can be empty.
       case"news":return React.createElement(NewsView,{data});
       case"todo":return React.createElement(TodoView,{todos,onAddTodo:addTodo,onToggleTodo:toggleTodo,onDeleteTodo:deleteTodo,onClearCompleted:clearCompleted});
       case"reading":return React.createElement(ReadingView,{data});
+      case"jobs":return React.createElement(JobsView,{jobs,loading:jobsLoading,hasKeys:!!(adzunaId&&adzunaKey),onGoSettings:()=>setView("settings")});
       case"recipes":return React.createElement(RecipesView,null);
-      case"settings":return React.createElement(SettingsView,{onSaveKey:saveKey,savedKey:!!apiKey,countdowns,onAddCountdown:addCD,onDeleteCountdown:delCD});
+      case"settings":return React.createElement(SettingsView,{onSaveKey:saveKey,savedKey:!!apiKey,countdowns,onAddCountdown:addCD,onDeleteCountdown:delCD,onSaveAdzuna:saveAdzuna,savedAdzuna:!!(adzunaId&&adzunaKey)});
       default:return null;
     }
   }
