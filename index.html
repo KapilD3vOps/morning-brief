@@ -928,7 +928,9 @@ function App(){
     setRefreshing(true);
     try{
       const today=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-      const SYS=`Today is ${today}, London UK. Search for current news and data. Return ONLY valid JSON with no other text or markdown. Structure:
+      const SYS=`CRITICAL INSTRUCTION: You are a JSON-only API. Your entire response must be a single valid JSON object. Do NOT write any explanation, preamble, or text before or after the JSON. Do NOT say "I need to" or "Let me". Start your response with { and end with }. Any text outside the JSON will break the application.
+
+Today is ${today}, London UK. Use web_search to find current data. Return ONLY this JSON structure:
 {"opening":"one warm sentence with today's specific context","story":{"headline":"string","body":"2-3 sentence narrative"},"news":[{"topic":"string","color":"string","bullets":["string","string","string"]}],"markets":{"indices":[{"name":"string","value":"string","change":"string","up":boolean}],"portfolioChanges":{"META":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean},"GOOGL":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean}},"insight":"string","situations":[{"topic":"string","update":"string"}]},"arsenal":{"lastResults":[{"opponent":"string","home":boolean,"score":"string","result":"W|D|L","competition":"string","date":"string"}],"nextFixtures":[{"opponent":"string","home":boolean,"competition":"string","date":"string"}]},"reading":{"sport":[{"type":"PODCAST|YOUTUBE|READ|WATCH","title":"string","why":"string","meta":"string"}],"techAI":[{"type":"string","title":"string","why":"string","meta":"string"}],"business":[{"type":"string","title":"string","why":"string","meta":"string"}],"culture":[]},"quickHits":["string"]}
 News topics and colors: AI & Tech (#2A5A8A), Business (#8A6020), Football (#1A5A1A), Cricket (#7A4A2A), Sports Business (#3A2A6A), Sports Headlines (#2A4A6A), London (#2A4A3A). 2-3 bullets each.
 Markets: FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR only. Search META and GOOGL current price for portfolio changes.
@@ -951,8 +953,17 @@ Reading: 2 items per genre for sport, techAI, business. Culture can be empty.
       if(rd.error)throw new Error(rd.error.message);
       const tb=rd.content.find(b=>b.type==="text");
       if(tb){
-        const clean=tb.text.trim().replace(/^```json\s*/,"").replace(/\s*```$/,"");
-        const nd=JSON.parse(clean);
+        // Extract JSON robustly — handles cases where model adds surrounding text
+        let raw=tb.text.trim();
+        // Strip markdown fences if present
+        raw=raw.replace(/^```json\s*/i,"").replace(/\s*```$/,"");
+        // If doesn't start with {, find the first { in the response
+        if(!raw.startsWith("{")){
+          const start=raw.indexOf("{");
+          const end=raw.lastIndexOf("}");
+          if(start!==-1&&end!==-1)raw=raw.slice(start,end+1);
+        }
+        const nd=JSON.parse(raw);
         const now=new Date().toISOString();
         setData(nd);setLastUpdated(now);
         await Promise.allSettled([
