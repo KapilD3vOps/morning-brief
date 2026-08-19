@@ -922,55 +922,56 @@ function App(){
   }
 
 
-  // Refresh — Haiku 4.5 for news, story, markets, Arsenal, reading
+  // Refresh — two-stage: Stage 1 searches freely, Stage 2 formats JSON with prefill
   async function refresh(){
     if(!apiKey){alert("Add your Anthropic API key in Settings first.");setView("settings");return;}
     setRefreshing(true);
     try{
       const today=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-      const SYS=`CRITICAL INSTRUCTION: You are a JSON-only API. Your entire response must be a single valid JSON object. Do NOT write any explanation, preamble, or text before or after the JSON. Do NOT say "I need to" or "Let me". Start your response with { and end with }. Any text outside the JSON will break the application.
+      const HEADERS={"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
 
-Today is ${today}, London UK. Use web_search to find current data. Return ONLY this JSON structure:
-{"opening":"one warm sentence with today's specific context","story":{"headline":"string","body":"2-3 sentence narrative"},"news":[{"topic":"string","color":"string","bullets":["string","string","string"]}],"markets":{"indices":[{"name":"string","value":"string","change":"string","up":boolean}],"portfolioChanges":{"META":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean},"GOOGL":{"daily":"string","dailyUp":boolean,"monthly":"string","monthlyUp":boolean}},"insight":"string","situations":[{"topic":"string","update":"string"}]},"arsenal":{"lastResults":[{"opponent":"string","home":boolean,"score":"string","result":"W|D|L","competition":"string","date":"string"}],"nextFixtures":[{"opponent":"string","home":boolean,"competition":"string","date":"string"}]},"reading":{"sport":[{"type":"PODCAST|YOUTUBE|READ|WATCH","title":"string","why":"string","meta":"string"}],"techAI":[{"type":"string","title":"string","why":"string","meta":"string"}],"business":[{"type":"string","title":"string","why":"string","meta":"string"}],"culture":[]},"quickHits":["string"]}
-News topics and colors: AI & Tech (#2A5A8A), Business (#8A6020), Football (#1A5A1A), Cricket (#7A4A2A), Sports Business (#3A2A6A), Sports Headlines (#2A4A6A), London (#2A4A3A). 2-3 bullets each.
-Markets: FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR only. Search META and GOOGL current price for portfolio changes.
-Arsenal: search for most recent results and next Premier League fixtures.
-Situations: Sports Streaming Rights, AI Regulation.
-Reading: 2 items per genre for sport, techAI, business. Culture can be empty.
-5 quickHits — surprising, fun, or useful one-liners.`;
-      const res=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      // ── Stage 1: Search and gather (Haiku can be chatty here, that is fine) ──
+      const s1=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:HEADERS,
         body:JSON.stringify({
           model:"claude-haiku-4-5-20251001",
           max_tokens:3000,
           tools:[{"type":"web_search_20250305","name":"web_search"}],
-          system:SYS,
-          messages:[{role:"user",content:"Generate my morning brief."}]
+          system:`You are a news researcher. Today is ${today}, London UK. Search for and summarise current data on: AI & Tech news, UK Business news, Premier League football, Arsenal last 3 results and next 3 fixtures, England cricket, Sports business, London headlines. Also search for: FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR current levels. META and GOOGL current stock price and recent change. Sports streaming rights latest news. AI regulation news. Reading/podcast recommendations for sport, tech, business. Provide thorough factual notes.`,
+          messages:[{role:"user",content:"Search for today's news and data."}]
         })
       });
-      const rd=await res.json();
-      if(rd.error)throw new Error(rd.error.message);
-      const tb=rd.content.find(b=>b.type==="text");
+      const d1=await s1.json();
+      if(d1.error)throw new Error("Search failed: "+d1.error.message);
+      const notes=d1.content.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"No data";
+
+      // ── Stage 2: Format as JSON — no tools, prefill forces JSON output ──
+      const STRUCT='{"opening":"string","story":{"headline":"string","body":"string"},"news":[{"topic":"string","color":"string","bullets":["string"]}],"markets":{"indices":[{"name":"string","value":"string","change":"string","up":true}],"portfolioChanges":{"META":{"daily":"string","dailyUp":true,"monthly":"string","monthlyUp":true},"GOOGL":{"daily":"string","dailyUp":true,"monthly":"string","monthlyUp":true}},"insight":"string","situations":[{"topic":"string","update":"string"}]},"arsenal":{"lastResults":[{"opponent":"string","home":true,"score":"string","result":"W","competition":"string","date":"string"}],"nextFixtures":[{"opponent":"string","home":true,"competition":"string","date":"string"}]},"reading":{"sport":[{"type":"PODCAST","title":"string","why":"string","meta":"string"}],"techAI":[{"type":"READ","title":"string","why":"string","meta":"string"}],"business":[{"type":"READ","title":"string","why":"string","meta":"string"}],"culture":[]},"quickHits":["string"]}';
+      const RULES="News topic colors: AI & Tech=#2A5A8A, Business=#8A6020, Football=#1A5A1A, Cricket=#7A4A2A, Sports Business=#3A2A6A, Sports Headlines=#2A4A6A, London=#2A4A3A. Include all 7 topics with 2-3 bullets each. 5 market indices. Arsenal: 3 last results + 3 next fixtures. 2 situations (Sports Streaming Rights, AI Regulation). Reading: 2 items each for sport/techAI/business. 5 quickHits.";
+      const s2=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:HEADERS,
+        body:JSON.stringify({
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:3000,
+          system:"You are a JSON formatter. Output only valid JSON. No explanation, no preamble, no markdown.",
+          messages:[
+            {role:"user",content:"Format these news notes as a JSON object matching this structure: "+STRUCT+"\n\nRules: "+RULES+"\n\nNotes:\n"+notes},
+            {role:"assistant",content:"{"}
+          ]
+        })
+      });
+      const d2=await s2.json();
+      if(d2.error)throw new Error("Format failed: "+d2.error.message);
+      const tb=d2.content.find(b=>b.type==="text");
       if(tb){
-        // Extract JSON robustly — handles cases where model adds surrounding text
-        let raw=tb.text.trim();
-        // Strip markdown fences if present
-        raw=raw.replace(/^```json\s*/i,"").replace(/\s*```$/,"");
-        // If doesn't start with {, find the first { in the response
-        if(!raw.startsWith("{")){
-          const start=raw.indexOf("{");
-          const end=raw.lastIndexOf("}");
-          if(start!==-1&&end!==-1)raw=raw.slice(start,end+1);
-        }
-        const nd=JSON.parse(raw);
+        // Prepend the { we used to prefill, then parse
+        const nd=JSON.parse("{"+tb.text.trim());
         const now=new Date().toISOString();
         setData(nd);setLastUpdated(now);
         await Promise.allSettled([
           store.set("morning-data",JSON.stringify(nd)),
           store.set("morning-last-updated",now)
         ]);
-        // Also re-fetch weather so it's fresh
         fetchWeather();
       }
     }catch(e){console.error(e);alert("Refresh failed: "+e.message);}
