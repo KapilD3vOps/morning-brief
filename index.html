@@ -545,7 +545,6 @@ function HomeView({data,weather,wxLoading,todos,onAddTodo,onToggleTodo,countdown
   );
 }
 
-
 // ── Jobs view — Adzuna auto-fetch —————————————————————
 function JobsView({jobs,loading,hasKeys,onGoSettings}){
   if(!hasKeys)return React.createElement("div",{className:"jobs-setup"},
@@ -907,7 +906,6 @@ function App(){
     finally{setJobsLoading(false);}
   }
 
-
   async function saveKey(k){setApiKey(k);try{await store.set("morning-api-key",k);}catch(e){}}
 
   async function saveAdzuna(id,key){
@@ -921,8 +919,10 @@ function App(){
     }catch(e){}
   }
 
-
-  // Refresh — two-stage: Stage 1 searches freely, Stage 2 formats JSON with prefill
+  // Refresh — single call with web search + forced tool use for guaranteed JSON.
+  // Per Anthropic docs: prefill is NOT supported on 4.6+ models; the reliable way
+  // to get structured JSON (even alongside web search) is to define a tool whose
+  // input schema IS the structure, then read it back from the tool_use block.
   async function refresh(){
     if(!apiKey){alert("Add your Anthropic API key in Settings first.");setView("settings");return;}
     setRefreshing(true);
@@ -930,50 +930,72 @@ function App(){
       const today=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
       const HEADERS={"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
 
-      // ── Stage 1: Search and gather (Haiku can be chatty here, that is fine) ──
-      const s1=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",headers:HEADERS,
-        body:JSON.stringify({
-          model:"claude-haiku-4-5-20251001",
-          max_tokens:3000,
-          tools:[{"type":"web_search_20250305","name":"web_search"}],
-          system:`You are a news researcher. Today is ${today}, London UK. Search for and summarise current data on: AI & Tech news, UK Business news, Premier League football, Arsenal last 3 results and next 3 fixtures, England cricket, Sports business, London headlines. Also search for: FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR current levels. META and GOOGL current stock price and recent change. Sports streaming rights latest news. AI regulation news. Reading/podcast recommendations for sport, tech, business. Provide thorough factual notes.`,
-          messages:[{role:"user",content:"Search for today's news and data."}]
-        })
-      });
-      const d1=await s1.json();
-      if(d1.error)throw new Error("Search failed: "+d1.error.message);
-      const notes=d1.content.filter(b=>b.type==="text").map(b=>b.text).join("\n")||"No data";
+      // The tool's input_schema defines the exact JSON shape we want back.
+      const briefTool={
+        name:"save_brief",
+        description:"Save the completed morning brief. Call this once with all fields populated from your research.",
+        input_schema:{
+          type:"object",
+          properties:{
+            opening:{type:"string",description:"One warm sentence with today's specific context"},
+            story:{type:"object",properties:{headline:{type:"string"},body:{type:"string",description:"2-3 sentence narrative"}},required:["headline","body"]},
+            news:{type:"array",description:"Exactly 7 topics: AI & Tech, Business, Football, Cricket, Sports Business, Sports Headlines, London",items:{type:"object",properties:{topic:{type:"string"},color:{type:"string",description:"AI & Tech=#2A5A8A, Business=#8A6020, Football=#1A5A1A, Cricket=#7A4A2A, Sports Business=#3A2A6A, Sports Headlines=#2A4A6A, London=#2A4A3A"},bullets:{type:"array",items:{type:"string"},description:"2-3 one-sentence bullets"}},required:["topic","color","bullets"]}},
+            markets:{type:"object",properties:{
+              indices:{type:"array",description:"FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR",items:{type:"object",properties:{name:{type:"string"},value:{type:"string"},change:{type:"string"},up:{type:"boolean"}},required:["name","value","change","up"]}},
+              portfolioChanges:{type:"object",properties:{
+                META:{type:"object",properties:{daily:{type:"string"},dailyUp:{type:"boolean"},monthly:{type:"string"},monthlyUp:{type:"boolean"}},required:["daily","dailyUp","monthly","monthlyUp"]},
+                GOOGL:{type:"object",properties:{daily:{type:"string"},dailyUp:{type:"boolean"},monthly:{type:"string"},monthlyUp:{type:"boolean"}},required:["daily","dailyUp","monthly","monthlyUp"]}
+              },required:["META","GOOGL"]},
+              insight:{type:"string"},
+              situations:{type:"array",description:"Sports Streaming Rights and AI Regulation",items:{type:"object",properties:{topic:{type:"string"},update:{type:"string"}},required:["topic","update"]}}
+            },required:["indices","portfolioChanges","insight","situations"]},
+            arsenal:{type:"object",properties:{
+              lastResults:{type:"array",description:"3 most recent results",items:{type:"object",properties:{opponent:{type:"string"},home:{type:"boolean"},score:{type:"string"},result:{type:"string",description:"W, D or L"},competition:{type:"string"},date:{type:"string"}},required:["opponent","home","score","result","competition","date"]}},
+              nextFixtures:{type:"array",description:"3 upcoming fixtures",items:{type:"object",properties:{opponent:{type:"string"},home:{type:"boolean"},competition:{type:"string"},date:{type:"string"}},required:["opponent","home","competition","date"]}}
+            },required:["lastResults","nextFixtures"]},
+            reading:{type:"object",properties:{
+              sport:{type:"array",items:{type:"object",properties:{type:{type:"string",description:"PODCAST, YOUTUBE, READ or WATCH"},title:{type:"string"},why:{type:"string"},meta:{type:"string"}},required:["type","title","why","meta"]}},
+              techAI:{type:"array",items:{type:"object",properties:{type:{type:"string"},title:{type:"string"},why:{type:"string"},meta:{type:"string"}},required:["type","title","why","meta"]}},
+              business:{type:"array",items:{type:"object",properties:{type:{type:"string"},title:{type:"string"},why:{type:"string"},meta:{type:"string"}},required:["type","title","why","meta"]}},
+              culture:{type:"array",items:{type:"object",properties:{type:{type:"string"},title:{type:"string"},why:{type:"string"},meta:{type:"string"}}}}
+            },required:["sport","techAI","business","culture"]},
+            quickHits:{type:"array",description:"5 surprising, fun or useful one-liners",items:{type:"string"}}
+          },
+          required:["opening","story","news","markets","arsenal","reading","quickHits"]
+        }
+      };
 
-      // ── Stage 2: Format as JSON — no tools, prefill forces JSON output ──
-      const STRUCT='{"opening":"string","story":{"headline":"string","body":"string"},"news":[{"topic":"string","color":"string","bullets":["string"]}],"markets":{"indices":[{"name":"string","value":"string","change":"string","up":true}],"portfolioChanges":{"META":{"daily":"string","dailyUp":true,"monthly":"string","monthlyUp":true},"GOOGL":{"daily":"string","dailyUp":true,"monthly":"string","monthlyUp":true}},"insight":"string","situations":[{"topic":"string","update":"string"}]},"arsenal":{"lastResults":[{"opponent":"string","home":true,"score":"string","result":"W","competition":"string","date":"string"}],"nextFixtures":[{"opponent":"string","home":true,"competition":"string","date":"string"}]},"reading":{"sport":[{"type":"PODCAST","title":"string","why":"string","meta":"string"}],"techAI":[{"type":"READ","title":"string","why":"string","meta":"string"}],"business":[{"type":"READ","title":"string","why":"string","meta":"string"}],"culture":[]},"quickHits":["string"]}';
-      const RULES="News topic colors: AI & Tech=#2A5A8A, Business=#8A6020, Football=#1A5A1A, Cricket=#7A4A2A, Sports Business=#3A2A6A, Sports Headlines=#2A4A6A, London=#2A4A3A. Include all 7 topics with 2-3 bullets each. 5 market indices. Arsenal: 3 last results + 3 next fixtures. 2 situations (Sports Streaming Rights, AI Regulation). Reading: 2 items each for sport/techAI/business. 5 quickHits.";
-      const s2=await fetch("https://api.anthropic.com/v1/messages",{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",headers:HEADERS,
         body:JSON.stringify({
           model:"claude-haiku-4-5-20251001",
-          max_tokens:3000,
-          system:"You are a JSON formatter. Output only valid JSON. No explanation, no preamble, no markdown.",
-          messages:[
-            {role:"user",content:"Format these news notes as a JSON object matching this structure: "+STRUCT+"\n\nRules: "+RULES+"\n\nNotes:\n"+notes},
-            {role:"assistant",content:"{"}
-          ]
+          max_tokens:4000,
+          tools:[
+            {"type":"web_search_20250305","name":"web_search"},
+            briefTool
+          ],
+          system:`You are a personal morning brief assistant. Today is ${today}, London UK. First use web_search to research all the required topics, then call save_brief exactly once with every field populated. Research: AI & Tech news, UK Business news, Premier League football, Arsenal (last 3 results and next 3 fixtures), England cricket, Sports business, London headlines, market levels (FTSE 100, S&P 500, GBP/USD, Gold, GBP/EUR), META and GOOGL stock changes, sports streaming rights news, AI regulation news, and reading/podcast recommendations for sport/tech/business.`,
+          messages:[{role:"user",content:"Research and save today's morning brief."}]
         })
       });
-      const d2=await s2.json();
-      if(d2.error)throw new Error("Format failed: "+d2.error.message);
-      const tb=d2.content.find(b=>b.type==="text");
-      if(tb){
-        // Prepend the { we used to prefill, then parse
-        const nd=JSON.parse("{"+tb.text.trim());
-        const now=new Date().toISOString();
-        setData(nd);setLastUpdated(now);
-        await Promise.allSettled([
-          store.set("morning-data",JSON.stringify(nd)),
-          store.set("morning-last-updated",now)
-        ]);
-        fetchWeather();
+      const rd=await res.json();
+      if(rd.error)throw new Error(rd.error.message);
+
+      // Find the save_brief tool call — its .input IS our JSON, already parsed.
+      const toolCall=(rd.content||[]).find(b=>b.type==="tool_use"&&b.name==="save_brief");
+      if(!toolCall){
+        // Fallback: model answered in text instead of calling the tool
+        const txt=(rd.content||[]).filter(b=>b.type==="text").map(b=>b.text).join(" ");
+        throw new Error("Model did not return structured data. "+(txt?txt.slice(0,80):"Try again."));
       }
+      const nd=toolCall.input;
+      const now=new Date().toISOString();
+      setData(nd);setLastUpdated(now);
+      await Promise.allSettled([
+        store.set("morning-data",JSON.stringify(nd)),
+        store.set("morning-last-updated",now)
+      ]);
+      fetchWeather();
     }catch(e){console.error(e);alert("Refresh failed: "+e.message);}
     finally{setRefreshing(false);}
   }
@@ -1010,7 +1032,7 @@ function App(){
           React.createElement("i",{className:"ti "+n.icon}),n.label
         ))
       ),
-      React.createElement("div",{className:"sb-footer"},"v4.0 \u00b7 Haiku 4.5")
+      React.createElement("div",{className:"sb-footer"},"v4.2 · two-stage")
     ),
     React.createElement("div",{className:"main"},
       React.createElement("div",{className:"topbar"},
