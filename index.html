@@ -850,9 +850,11 @@ function App(){
         store.get("morning-last-updated"),
         store.get("morning-todos"),
         store.get("morning-api-key"),
-        store.get("morning-countdowns")
+        store.get("morning-countdowns"),
+        store.get("morning-adzuna-id"),
+        store.get("morning-adzuna-key")
       ]);
-      const[d,lu,t,k,cd]=rs;
+      const[d,lu,t,k,cd,aid,akey]=rs;
       if(d.status==="fulfilled"&&d.value)setData(JSON.parse(d.value.value));
       if(lu.status==="fulfilled"&&lu.value)setLastUpdated(lu.value.value);
       if(t.status==="fulfilled"&&t.value)setTodos(JSON.parse(t.value.value));
